@@ -206,7 +206,7 @@ function RaceVignette({
 
 /* ------------------------------------------------------------------ */
 
-const RING_COLORS = ['#a78bfa', '#7c5cfa', '#5b8def', '#38bdf8', '#f4a24c', '#3a3a46']
+const RING_COLORS = ['#ff9a66', '#f54e00', '#5b8def', '#38bdf8', '#f4a24c', '#3a3a46']
 
 function RingVignette({
   spec,
