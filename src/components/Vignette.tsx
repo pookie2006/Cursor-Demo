@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { useSimProgress } from '../useSimProgress'
-import type { VignetteSpec, VignetteStep } from '../world'
+import type { VignetteSpec, VignetteStep } from '../tour'
 
 interface VignetteProps {
   spec: VignetteSpec

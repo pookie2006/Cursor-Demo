@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { userPrompt } from '../demoContent'
+import { challenges } from '../tour'
 import { CursorLogo } from './CursorLogo'
 
 type CompletionCardProps = {
@@ -39,12 +40,18 @@ export function CompletionCard({ reduceMotion, onReplay, onDismiss }: Completion
         </div>
 
         <h2 id="completion-title" className="completion__title">
-          That’s the loop
+          That’s the whole control plane
         </h2>
         <p className="completion__body">
-          You’ve seen all eight. Prompt, ground it in context, pick the right mode, review the diff,
-          and let Tab and ⌘K handle the rest. Now run it on your own codebase.
+          You’ve toured every stop — the local loop, modes and models, rules, skills, hooks, MCP,
+          parallel agents, the cloud, and the merge gate. Take CampusEvents further on your own:
         </p>
+
+        <ul className="completion__challenges">
+          {challenges.map((challenge) => (
+            <li key={challenge}>{challenge}</li>
+          ))}
+        </ul>
 
         <div className="completion__actions">
           <a className="completion__cta" href="https://cursor.com" target="_blank" rel="noreferrer">

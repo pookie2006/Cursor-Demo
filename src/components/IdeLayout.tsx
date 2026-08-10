@@ -18,16 +18,18 @@ import {
   userPrompt,
   type CodeToken,
 } from '../demoContent'
-import { featureOrder, type FeatureId } from '../features'
+import type { FeatureId } from '../features'
+import { stops, type TourStop } from '../tour'
 import { useSimProgress } from '../useSimProgress'
 import { Hotspot } from './Hotspot'
+import { Vignette } from './Vignette'
 
 type IdeLayoutProps = {
-  activeFeature: FeatureId | null
-  visited: Set<FeatureId>
+  activeStop: TourStop | null
+  visited: Set<string>
   scanning: boolean
   reduceMotion: boolean
-  onSelectFeature: (id: FeatureId) => void
+  onSelectStop: (id: string) => void
   onRestart: () => void
 }
 
@@ -100,16 +102,26 @@ function IconSliders() {
   )
 }
 
+/**
+ * The mock Cursor IDE — the only screen of the demo. The Prezi camera zooms
+ * into its regions (data-region attributes); each tour stop either drives one
+ * of the built-in simulations or renders a scripted vignette into its slot
+ * (terminal, editor file, chat card, popover).
+ */
 export function IdeLayout({
-  activeFeature,
+  activeStop,
   visited,
   scanning,
   reduceMotion,
-  onSelectFeature,
+  onSelectStop,
   onRestart,
 }: IdeLayoutProps) {
+  const activeFeature = (activeStop?.sim ?? null) as FeatureId | null
   const duration = activeFeature ? SIM_DURATIONS[activeFeature] : 0
-  const progress = useSimProgress(activeFeature, duration, reduceMotion)
+  const progress = useSimProgress(activeFeature ? activeStop!.id : null, duration, reduceMotion)
+
+  const slot = activeStop?.slot ?? null
+  const slotVignette = activeStop?.vignette ?? null
 
   /** Normalised progress inside a sub-window of the active simulation. */
   const phase = (from: number, to: number) => clamp((progress - from) / (to - from))
@@ -168,15 +180,17 @@ export function IdeLayout({
     : 0
   const automationRunning = isSim('automations') && progress > 0.78
 
-  const tourProgress = Math.round((visited.size / featureOrder.length) * 100)
+  const tourProgress = Math.round((visited.size / stops.length) * 100)
 
-  const hotspot = (id: FeatureId) => ({
+  const hotspot = (id: string) => ({
     id,
-    active: activeFeature === id,
+    active: activeStop?.id === id,
     visited: visited.has(id),
     scanning,
-    onSelect: onSelectFeature,
+    onSelect: onSelectStop,
   })
+
+  const showEditorFile = slot === 'editor-file' && slotVignette
 
   return (
     <motion.div
@@ -187,7 +201,7 @@ export function IdeLayout({
     >
       {/* ——— Agents sidebar ——— */}
       <aside className="agents-bar">
-        <div className="agents-bar__top">
+        <div className="agents-bar__top" data-region="sidebar">
           <div className="agents-bar__nav">
             <div className="agents-nav agents-nav--active" aria-hidden="true">
               <IconPlus />
@@ -249,13 +263,13 @@ export function IdeLayout({
               role="progressbar"
               aria-valuenow={visited.size}
               aria-valuemin={0}
-              aria-valuemax={featureOrder.length}
+              aria-valuemax={stops.length}
               aria-label="Features explored"
             >
               <i style={{ width: `${tourProgress}%` }} />
             </div>
             <span className="agents-bar__progress-count">
-              {visited.size}/{featureOrder.length}
+              {visited.size}/{stops.length}
             </span>
           </div>
           <div className="agents-bar__profile" aria-hidden="true">
@@ -277,7 +291,7 @@ export function IdeLayout({
           </button>
         </header>
 
-        <div className="agent-main__scroll">
+        <div className="agent-main__scroll" data-region="chat">
           <div className="agent-msg agent-msg--user">{userPrompt}</div>
 
           <div className="agent-msg agent-msg--ai">
@@ -290,7 +304,7 @@ export function IdeLayout({
             </div>
 
             {filesShown > 0 && (
-              <div className="agent-files-wrap hotspot-anchor">
+              <div className="agent-files-wrap hotspot-anchor" data-region="files">
                 <div className="agent-files">
                   <div className="agent-files__head">
                     <span>{filesShown} Files Changed</span>
@@ -311,12 +325,25 @@ export function IdeLayout({
                   </ul>
                 </div>
                 <Hotspot {...hotspot('diffs')} label="Files Changed" placement="left" />
+
+                {slot === 'files' && slotVignette && (
+                  <div className="files-vig" aria-hidden="true">
+                    <Vignette spec={slotVignette} active reduceMotion={reduceMotion} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {slot === 'chat' && slotVignette && (
+              <div className="chat-vig" aria-hidden="true">
+                <div className="chat-vig__label">{activeStop?.title}</div>
+                <Vignette spec={slotVignette} active reduceMotion={reduceMotion} />
               </div>
             )}
           </div>
         </div>
 
-        <div className="agent-input">
+        <div className="agent-input" data-region="input">
           {scanning && (
             <p className="cursor-ui__hint">
               Click a hotspot to start, or press <kbd>→</kbd> to take the tour
@@ -337,6 +364,13 @@ export function IdeLayout({
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {slot === 'popover-ring' && slotVignette && (
+            <div className="ring-pop" aria-hidden="true">
+              <div className="ring-pop__title">Context window</div>
+              <Vignette spec={slotVignette} active reduceMotion={reduceMotion} />
             </div>
           )}
 
@@ -371,8 +405,16 @@ export function IdeLayout({
               )}
               <Hotspot {...hotspot('modes')} label="Modes" placement="top" />
             </div>
-            <div className="agent-input__model" aria-hidden="true">
-              Cursor Grok 4.5
+            <div className="agent-input__model hotspot-anchor">
+              <span aria-hidden="true">Cursor Grok 4.5</span>
+              <Hotspot {...hotspot('models')} label="Models" placement="top" />
+
+              {slot === 'popover-model' && slotVignette && (
+                <div className="model-pop" aria-hidden="true">
+                  <div className="model-pop__title">Model</div>
+                  <Vignette spec={slotVignette} active reduceMotion={reduceMotion} />
+                </div>
+              )}
             </div>
             <div className="agent-input__send" aria-hidden="true">
               ↵
@@ -381,15 +423,20 @@ export function IdeLayout({
         </div>
       </main>
 
-      {/* ——— Editor / browser panel ——— */}
-      <section className="code-panel">
+      {/* ——— Editor / browser / terminal panel ——— */}
+      <section className="code-panel" data-region="code-panel">
         <div className="code-panel__tabs">
-          <div className={`code-panel__tab${browserActive ? '' : ' is-active'}`} aria-hidden="true">
+          <div
+            className={`code-panel__tab${browserActive || showEditorFile ? '' : ' is-active'}`}
+            aria-hidden="true"
+          >
             {editorFile}
           </div>
-          <div className="code-panel__tab" aria-hidden="true">
-            page.tsx
-          </div>
+          {showEditorFile && (
+            <div className="code-panel__tab is-active is-temp" aria-hidden="true">
+              {activeStop?.fileName}
+            </div>
+          )}
           <div className={`code-panel__tab hotspot-anchor${browserActive ? ' is-active' : ''}`}>
             <span aria-hidden="true">Browser</span>
             <Hotspot {...hotspot('browser')} label="Browser" placement="bottom" />
@@ -397,102 +444,143 @@ export function IdeLayout({
         </div>
 
         <div className="code-panel__breadcrumb" aria-hidden="true">
-          src <span>›</span> components <span>›</span> {editorFile}
+          {showEditorFile ? (
+            <>
+              .cursor <span>›</span> {activeStop?.fileName}
+            </>
+          ) : (
+            <>
+              src <span>›</span> components <span>›</span> {editorFile}
+            </>
+          )}
         </div>
 
-        {browserActive ? (
-          <div className="browser-preview" aria-hidden="true">
-            <div className="browser-preview__bar">
-              <span className="browser-preview__url">{preview.url}</span>
-              {previewVerified && <span className="browser-preview__check">Verified by Agent</span>}
-            </div>
-            <div className="browser-preview__page">
-              <div className="browser-preview__heading">{preview.heading}</div>
-              <div className="browser-preview__sub">{preview.sub}</div>
-              <div className="browser-preview__form">
-                <div className="browser-preview__input">
-                  {preview.emailPlaceholder.slice(0, previewTyped)}
-                  <i />
-                </div>
-                <div className="browser-preview__button">{preview.button}</div>
+        <div className="code-panel__body" data-region="editor">
+          {browserActive ? (
+            <div className="browser-preview" aria-hidden="true">
+              <div className="browser-preview__bar">
+                <span className="browser-preview__url">{preview.url}</span>
+                {previewVerified && (
+                  <span className="browser-preview__check">Verified by Agent</span>
+                )}
               </div>
-              {previewVerified && <div className="browser-preview__toast">{preview.toast}</div>}
-            </div>
-          </div>
-        ) : (
-          <div className="code-panel__editor">
-            <div className="code-panel__gutter" aria-hidden="true">
-              {codeLines.map((line) => (
-                <div key={line.n} className={line.ghost && !tabAccepted ? 'is-ghost' : undefined}>
-                  {line.n}
+              <div className="browser-preview__page">
+                <div className="browser-preview__heading">{preview.heading}</div>
+                <div className="browser-preview__sub">{preview.sub}</div>
+                <div className="browser-preview__form">
+                  <div className="browser-preview__input">
+                    {preview.emailPlaceholder.slice(0, previewTyped)}
+                    <i />
+                  </div>
+                  <div className="browser-preview__button">{preview.button}</div>
                 </div>
-              ))}
-              {inlineApplied && <div className="is-added">+</div>}
+                {previewVerified && <div className="browser-preview__toast">{preview.toast}</div>}
+              </div>
             </div>
+          ) : showEditorFile ? (
+            <div className="editor-vig" aria-hidden="true">
+              <Vignette spec={slotVignette!} active reduceMotion={reduceMotion} />
+            </div>
+          ) : (
+            <div className="code-panel__editor">
+              <div className="code-panel__gutter" aria-hidden="true">
+                {codeLines.map((line) => (
+                  <div key={line.n} className={line.ghost && !tabAccepted ? 'is-ghost' : undefined}>
+                    {line.n}
+                  </div>
+                ))}
+                {inlineApplied && <div className="is-added">+</div>}
+              </div>
 
-            <div className="code-panel__code">
-              {codeLines.map((line) => {
-                if (!line.ghost) {
+              <div className="code-panel__code">
+                {codeLines.map((line) => {
+                  if (!line.ghost) {
+                    return (
+                      <div key={line.n} className="code-line" aria-hidden="true">
+                        <Tokens tokens={line.tokens} />
+                      </div>
+                    )
+                  }
+
+                  const visible = tabAccepted ? line.tokens : sliceTokens(line.tokens, ghostChars)
+
                   return (
-                    <div key={line.n} className="code-line" aria-hidden="true">
-                      <Tokens tokens={line.tokens} />
+                    <div
+                      key={line.n}
+                      className={`code-line hotspot-anchor${
+                        tabAccepted ? ' code-line--accepted' : ' code-line--ghost'
+                      }`}
+                    >
+                      <span aria-hidden="true">
+                        <Tokens tokens={visible} />
+                      </span>
+                      {showTabHint && (
+                        <kbd className="tab-hint" aria-hidden="true">
+                          Tab
+                        </kbd>
+                      )}
+                      <Hotspot {...hotspot('tab')} label="Tab" placement="left" />
                     </div>
                   )
-                }
+                })}
 
-                const visible = tabAccepted ? line.tokens : sliceTokens(line.tokens, ghostChars)
-
-                return (
-                  <div
-                    key={line.n}
-                    className={`code-line hotspot-anchor${
-                      tabAccepted ? ' code-line--accepted' : ' code-line--ghost'
-                    }`}
-                  >
-                    <span aria-hidden="true">
-                      <Tokens tokens={visible} />
-                    </span>
-                    {showTabHint && (
-                      <kbd className="tab-hint" aria-hidden="true">
-                        Tab
-                      </kbd>
-                    )}
-                    <Hotspot {...hotspot('tab')} label="Tab" placement="left" />
+                {inlineApplied && (
+                  <div className="code-line code-line--added" aria-hidden="true">
+                    <Tokens tokens={inlineEditResult} />
                   </div>
-                )
-              })}
+                )}
 
-              {inlineApplied && (
-                <div className="code-line code-line--added" aria-hidden="true">
-                  <Tokens tokens={inlineEditResult} />
-                </div>
-              )}
-
-              <div className={`code-inline hotspot-anchor${inlineOpen ? ' is-open' : ''}`}>
-                <span className="code-inline__content" aria-hidden="true">
-                  {inlineOpen ? (
-                    <>
-                      <span className="code-inline__prompt">
-                        {inlineEditPrompt.slice(0, inlinePromptChars)}
-                        {inlinePromptChars < inlineEditPrompt.length && (
-                          <span className="agent-caret" />
+                <div className={`code-inline hotspot-anchor${inlineOpen ? ' is-open' : ''}`}>
+                  <span className="code-inline__content" aria-hidden="true">
+                    {inlineOpen ? (
+                      <>
+                        <span className="code-inline__prompt">
+                          {inlineEditPrompt.slice(0, inlinePromptChars)}
+                          {inlinePromptChars < inlineEditPrompt.length && (
+                            <span className="agent-caret" />
+                          )}
+                        </span>
+                        {inlineGenerating && (
+                          <span className="code-inline__status">Generating…</span>
                         )}
-                      </span>
-                      {inlineGenerating && <span className="code-inline__status">Generating…</span>}
-                      {inlineApplied && (
-                        <span className="code-inline__status is-done">Applied</span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="code-inline__idle">Inline edit</span>
-                  )}
-                  <kbd>⌘K</kbd>
-                </span>
-                <Hotspot {...hotspot('inline-edit')} label="Inline Edit" placement="top" />
+                        {inlineApplied && (
+                          <span className="code-inline__status is-done">Applied</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="code-inline__idle">Inline edit</span>
+                    )}
+                    <kbd>⌘K</kbd>
+                  </span>
+                  <Hotspot {...hotspot('inline-edit')} label="Inline Edit" placement="top" />
+                </div>
               </div>
             </div>
+          )}
+        </div>
+
+        <div className="ide-terminal" data-region="terminal">
+          <div className="ide-terminal__head hotspot-anchor">
+            <span aria-hidden="true">Terminal</span>
+            <span className="ide-terminal__shell" aria-hidden="true">
+              zsh — {projectName}
+            </span>
+            <Hotspot {...hotspot('hooks')} label="Terminal" placement="top" />
           </div>
-        )}
+          <div className="ide-terminal__body" aria-hidden="true">
+            {slot === 'terminal' && slotVignette ? (
+              <Vignette spec={slotVignette} active reduceMotion={reduceMotion} />
+            ) : (
+              <div className="ide-terminal__idle">
+                <div className="vig-row vig-cmd">
+                  <span className="vig-prompt">$</span>
+                  <span>npm run dev</span>
+                </div>
+                <div className="vig-row vig-out--dim">➜ CampusEvents ready on localhost:3000</div>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="code-panel__status" aria-hidden="true">
           <span>main*</span>

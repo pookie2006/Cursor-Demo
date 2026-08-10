@@ -2,43 +2,31 @@ import { useCallback, useMemo, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 
 import { LogoIntro } from './components/LogoIntro'
-import { WorldCanvas } from './components/WorldCanvas'
-import { isFeatureId } from './features'
-import { parseWorldHash, type WorldFocus } from './world'
+import { IdeWorld } from './components/IdeWorld'
+import { isStopId } from './tour'
 
-type Stage = 'intro' | 'zooming' | 'world'
+type Stage = 'intro' | 'zooming' | 'ide'
 
 interface InitialState {
   stage: Stage
-  focus: WorldFocus
-  ideFeature: string | null
+  stopId: string | null
 }
 
 /**
- * Deep links: #/extend/skills zooms straight to a node, #/home (or legacy
- * ?ide / ?feature=tab) enters the live IDE, no params plays the intro.
+ * Deep links: #/skills (or ?at=skills, or legacy ?feature=tab) zooms straight
+ * to a stop, ?ide skips the intro to the overview, no params plays the intro.
  */
 function readUrl(): InitialState {
-  if (typeof window === 'undefined') {
-    return { stage: 'intro', focus: { kind: 'world' }, ideFeature: null }
-  }
+  if (typeof window === 'undefined') return { stage: 'intro', stopId: null }
 
   const params = new URLSearchParams(window.location.search)
-  const requestedFeature = params.get('feature')
+  const requested =
+    window.location.hash.replace(/^#\/?/, '') || params.get('at') || params.get('feature') || ''
 
-  if (requestedFeature && isFeatureId(requestedFeature)) {
-    return { stage: 'world', focus: { kind: 'node', id: 'home' }, ideFeature: requestedFeature }
-  }
+  if (requested && isStopId(requested)) return { stage: 'ide', stopId: requested }
+  if (params.has('ide') || params.has('at')) return { stage: 'ide', stopId: null }
 
-  // ?at=extend/skills works where hashes get stripped (e.g. some embeds).
-  const fromUrl = parseWorldHash(window.location.hash) ?? parseWorldHash(`#/${params.get('at') ?? ''}`)
-  if (fromUrl) return { stage: 'world', focus: fromUrl, ideFeature: null }
-
-  if (params.has('ide')) {
-    return { stage: 'world', focus: { kind: 'node', id: 'home' }, ideFeature: null }
-  }
-
-  return { stage: 'intro', focus: { kind: 'world' }, ideFeature: null }
+  return { stage: 'intro', stopId: null }
 }
 
 export default function App() {
@@ -50,7 +38,7 @@ export default function App() {
   const enter = useCallback(() => {
     setStage((current) => {
       if (current !== 'intro') return current
-      return reduceMotion ? 'world' : 'zooming'
+      return reduceMotion ? 'ide' : 'zooming'
     })
   }, [reduceMotion])
 
@@ -61,14 +49,13 @@ export default function App() {
           onEnter={enter}
           zooming={stage === 'zooming'}
           reduceMotion={reduceMotion}
-          onZoomComplete={() => setStage('world')}
+          onZoomComplete={() => setStage('ide')}
         />
       )}
 
-      {stage === 'world' && (
-        <WorldCanvas
-          initialFocus={initial.focus}
-          initialIdeFeature={initial.ideFeature}
+      {stage === 'ide' && (
+        <IdeWorld
+          initialStopId={initial.stopId}
           reduceMotion={reduceMotion}
           onRestart={() => setStage('intro')}
         />

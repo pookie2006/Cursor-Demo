@@ -1,16 +1,14 @@
-import type { FeatureId } from '../features'
-
 export type HotspotPlacement = 'right' | 'left' | 'top' | 'bottom'
 
 type HotspotProps = {
-  id: FeatureId
+  id: string
   label: string
   active: boolean
   visited: boolean
   /** Plays a one-time attention pulse while the tour is still undiscovered. */
   scanning?: boolean
   placement?: HotspotPlacement
-  onSelect: (id: FeatureId) => void
+  onSelect: (id: string) => void
 }
 
 export function Hotspot({
