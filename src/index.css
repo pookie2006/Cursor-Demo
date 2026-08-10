@@ -1788,6 +1788,29 @@ ul {
   color: rgba(232, 232, 238, 0.6);
 }
 
+/* When the next flashing dot is outside the zoomed view, this is the way out. */
+.world-tourbar__end.is-pulsing {
+  color: #fff;
+  background: var(--accent);
+  animation: zoomout-flash 1.5s ease-in-out infinite;
+}
+
+.world-tourbar__end.is-pulsing:hover {
+  background: var(--accent-strong);
+}
+
+@keyframes zoomout-flash {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 9px rgba(134, 59, 255, 0.16);
+  }
+}
+
 .world-stamp {
   position: fixed;
   left: 16px;

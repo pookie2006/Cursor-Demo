@@ -36,6 +36,7 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
   const [showHelp, setShowHelp] = useState(false)
   const [completionDismissed, setCompletionDismissed] = useState(false)
   const [anchor, setAnchor] = useState<Rect | null>(null)
+  const [nextDotRect, setNextDotRect] = useState<Rect | null>(null)
   const [viewport, setViewport] = useState(() => ({
     w: typeof window === 'undefined' ? 1440 : window.innerWidth,
     h: typeof window === 'undefined' ? 900 : window.innerHeight,
@@ -161,6 +162,33 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
     })
   }, [activeStop, viewport])
 
+  // Measure the flashing next dot in untransformed IDE coordinates so we can
+  // tell whether the current camera framing actually shows it.
+  useLayoutEffect(() => {
+    if (!frameRef.current || !activeStop || !nextStop) {
+      setNextDotRect(null)
+      return
+    }
+
+    const frame = frameRef.current
+    const el = frame.querySelector(`[data-feature="${nextStop.id}"]`)
+    if (!el) {
+      setNextDotRect(null)
+      return
+    }
+
+    const frameRect = frame.getBoundingClientRect()
+    const elRect = el.getBoundingClientRect()
+    const scaleNow = frameRect.width / IDE_W
+
+    setNextDotRect({
+      x: (elRect.left - frameRect.left) / scaleNow,
+      y: (elRect.top - frameRect.top) / scaleNow,
+      w: elRect.width / scaleNow,
+      h: elRect.height / scaleNow,
+    })
+  }, [activeStop, nextStop, viewport])
+
   const onWheel = useCallback(
     (event: React.WheelEvent) => {
       if (event.deltaY < 40) return
@@ -203,6 +231,22 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
     }
   }
 
+  // Project the next dot through the target camera: it counts as visible only
+  // if it lands inside the viewport and outside the band the panel docks over.
+  let nextDotOnScreen = true
+  if (activeStop && nextStop) {
+    if (!nextDotRect) {
+      nextDotOnScreen = false
+    } else {
+      const cx = tx + scale * (nextDotRect.x + nextDotRect.w / 2)
+      const cy = ty + scale * (nextDotRect.y + nextDotRect.h / 2)
+      const leftEdge = panelSide === 'left' ? PANEL_W + 44 : 16
+      const rightEdge = viewport.w - (panelSide === 'right' ? PANEL_W + 44 : 16)
+      nextDotOnScreen = cx >= leftEdge && cx <= rightEdge && cy >= 16 && cy <= viewport.h - 76
+    }
+  }
+  const zoomOutPulse = Boolean(activeStop && nextStop && !nextDotOnScreen)
+
   return (
     <div
       className="ide-world"
@@ -242,6 +286,7 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             index={index}
             side={panelSide}
             nextTitle={nextStop && nextStop.id !== activeStop.id ? nextStop.title : null}
+            nextDotOnScreen={nextDotOnScreen}
             reduceMotion={reduceMotion}
             onPrev={() => step(-1)}
             onClose={zoomOut}
@@ -258,8 +303,12 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             <span className="world-tourbar__stop">
               {index + 1}/{stops.length} · {activeStop.title}
             </span>
-            <button type="button" className="world-tourbar__end" onClick={zoomOut}>
-              Overview
+            <button
+              type="button"
+              className={`world-tourbar__end${zoomOutPulse ? ' is-pulsing' : ''}`}
+              onClick={zoomOut}
+            >
+              Zoom out
             </button>
           </>
         ) : (
@@ -306,6 +355,7 @@ function StopPanel({
   index,
   side,
   nextTitle,
+  nextDotOnScreen,
   reduceMotion,
   onPrev,
   onClose,
@@ -314,6 +364,7 @@ function StopPanel({
   index: number
   side: 'left' | 'right'
   nextTitle: string | null
+  nextDotOnScreen: boolean
   reduceMotion: boolean
   onPrev: () => void
   onClose: () => void
@@ -372,7 +423,8 @@ function StopPanel({
         </button>
         {nextTitle ? (
           <span className="stop-panel__next-hint">
-            Next: <strong>{nextTitle}</strong> — click the flashing dot
+            Next: <strong>{nextTitle}</strong> —{' '}
+            {nextDotOnScreen ? 'click the flashing dot' : 'zoom out to find the flashing dot'}
           </span>
         ) : (
           <span className="stop-panel__next-hint">Tour complete — Esc for the overview</span>
