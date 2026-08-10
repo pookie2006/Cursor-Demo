@@ -332,11 +332,8 @@ export function IdeLayout({
                 <div className="agent-files">
                   <div className="agent-files__head">
                     <span>{filesShown} Files Changed</span>
-                    <span
-                      className={`agent-files__meta hotspot-anchor${diffRow >= 0 ? ' is-lit' : ''}`}
-                    >
+                    <span className={`agent-files__meta${diffRow >= 0 ? ' is-lit' : ''}`}>
                       Review
-                      {spot('bugbot', 'Bugbot', 'top')}
                     </span>
                   </div>
                   <ul>
@@ -353,6 +350,9 @@ export function IdeLayout({
                 </div>
                 {spot('diffs', 'Files Changed', 'left')}
                 {spot('worktrees', 'Worktrees', 'right')}
+                {/* Above the card: the card itself clips its overflow, so the
+                    Review badge inside it can't host a dot. */}
+                {spot('bugbot', 'Bugbot & /review', 'top')}
 
                 {slot === 'files' && slotVignette && (
                   <div className="files-vig" aria-hidden="true">
