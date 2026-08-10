@@ -1180,19 +1180,23 @@ ul {
   transition: opacity 0.16s ease, transform 0.16s ease;
 }
 
+/*
+ * Side labels fly INWARD (over the dot's own panel), never outward across a
+ * divider where the neighbouring panel or a scroll container would hide them.
+ */
 .hotspot--right .hotspot__label,
 .hotspot--left .hotspot__label {
   top: 50%;
-  transform: translateY(-50%) translateX(-4px);
+  transform: translateY(-50%) translateX(4px);
 }
 
 .hotspot--right .hotspot__label {
-  left: calc(100% + 6px);
+  right: calc(100% + 6px);
+  transform: translateY(-50%) translateX(-4px);
 }
 
 .hotspot--left .hotspot__label {
-  right: calc(100% + 6px);
-  transform: translateY(-50%) translateX(4px);
+  left: calc(100% + 6px);
 }
 
 .hotspot--top .hotspot__label,
