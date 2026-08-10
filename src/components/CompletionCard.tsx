@@ -36,7 +36,7 @@ export function CompletionCard({ reduceMotion, onReplay, onDismiss }: Completion
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
       >
         <div className="completion__mark">
-          <CursorLogo fill="#863bff" />
+          <CursorLogo fill="#f54e00" />
         </div>
 
         <h2 id="completion-title" className="completion__title">

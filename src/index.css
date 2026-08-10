@@ -13,10 +13,10 @@
   --text-on-dark: #d4d4d4;
   --text-dim-dark: #9a9a9a;
   --ghost: #8b949e;
-  --accent: #863bff;
-  --accent-strong: #7429f5;
-  --accent-soft: rgba(134, 59, 255, 0.12);
-  --accent-ring: rgba(134, 59, 255, 0.22);
+  --accent: #f54e00;
+  --accent-strong: #d94500;
+  --accent-soft: rgba(245, 78, 0, 0.12);
+  --accent-ring: rgba(245, 78, 0, 0.22);
   --add: #17803d;
   --del: #c43c3c;
   --user-bubble: #ebebef;
@@ -88,7 +88,7 @@ ul {
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(ellipse 50% 40% at 50% 45%, rgba(134, 59, 255, 0.14), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 45%, rgba(245, 78, 0, 0.14), transparent 60%),
     radial-gradient(ellipse 80% 60% at 50% 100%, rgba(40, 40, 48, 0.5), transparent 50%);
   pointer-events: none;
 }
@@ -856,7 +856,7 @@ ul {
 
 @keyframes accept-flash {
   from {
-    background: rgba(134, 59, 255, 0.22);
+    background: rgba(245, 78, 0, 0.22);
   }
   to {
     background: transparent;
@@ -1301,6 +1301,13 @@ ul {
   top: calc(100% + 8px);
 }
 
+/* Checkpoints lives in the IDE header: an above-pinned label pokes past the
+   frame's top edge and gets clipped, so this one drops below its dot. */
+.hotspot--next[data-feature='checkpoints'] .hotspot__label {
+  bottom: auto;
+  top: calc(100% + 12px);
+}
+
 /* Edge-anchored dots grow their label inward so scroll containers can't clip it. */
 .hotspot--next.hotspot--left .hotspot__label,
 .hotspot--next.hotspot--left:hover .hotspot__label,
@@ -1461,7 +1468,7 @@ ul {
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(1200px 800px at 50% 42%, rgba(134, 59, 255, 0.09), transparent 65%),
+    radial-gradient(1200px 800px at 50% 42%, rgba(245, 78, 0, 0.09), transparent 65%),
     radial-gradient(circle at 50% 50%, #101017 0%, #0a0a0f 100%);
   color: #e8e8ee;
 }
@@ -1560,9 +1567,9 @@ ul {
   display: block;
   padding: 0.5em 0.75em;
   border-radius: 8px;
-  background: rgba(134, 59, 255, 0.16);
-  border: 1px solid rgba(134, 59, 255, 0.32);
-  color: #ece5fb;
+  background: rgba(245, 78, 0, 0.16);
+  border: 1px solid rgba(245, 78, 0, 0.32);
+  color: #fbe9e0;
   font-family: var(--sans);
   font-size: 1.02em;
 }
@@ -1708,7 +1715,7 @@ ul {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #7429f5, #a78bfa);
+  background: linear-gradient(90deg, #d94500, #ff8a50);
 }
 
 .vig-race__note {
