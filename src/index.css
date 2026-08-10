@@ -793,7 +793,7 @@ ul {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.code-panel__breadcrumb span {
+.code-panel__breadcrumb span span {
   opacity: 0.6;
 }
 
@@ -1226,28 +1226,74 @@ ul {
   transform: translateX(-50%);
 }
 
-/* One-time discovery cue, staggered so the eye follows the tour order. */
-.hotspot--scanning .hotspot__dot {
-  animation: hotspot-scan 2.8s ease-out infinite;
+/*
+ * Dots spawn in tour order: each new one pops in and the next stop's dot
+ * flashes continuously as the call to action, with its label held open.
+ */
+.hotspot__dot {
+  animation: hotspot-spawn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
 }
 
-.hotspot--scanning[data-feature='agent'] .hotspot__dot { animation-delay: 0s; }
-.hotspot--scanning[data-feature='context'] .hotspot__dot { animation-delay: 0.16s; }
-.hotspot--scanning[data-feature='modes'] .hotspot__dot { animation-delay: 0.32s; }
-.hotspot--scanning[data-feature='diffs'] .hotspot__dot { animation-delay: 0.48s; }
-.hotspot--scanning[data-feature='tab'] .hotspot__dot { animation-delay: 0.64s; }
-.hotspot--scanning[data-feature='inline-edit'] .hotspot__dot { animation-delay: 0.8s; }
-.hotspot--scanning[data-feature='browser'] .hotspot__dot { animation-delay: 0.96s; }
-.hotspot--scanning[data-feature='automations'] .hotspot__dot { animation-delay: 1.12s; }
+.hotspot--next .hotspot__dot {
+  animation:
+    hotspot-spawn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards,
+    hotspot-flash 1.5s ease-in-out 0.4s infinite;
+}
 
-@keyframes hotspot-scan {
+/*
+ * The flashing dot's label is the wayfinding cue, so hold it open and pin it
+ * above the dot — side-positioned labels get clipped by scroll containers.
+ */
+.hotspot--next .hotspot__label {
+  opacity: 1;
+  top: auto;
+  right: auto;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hotspot--next.hotspot--bottom .hotspot__label {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+
+/* Edge-anchored dots grow their label inward so scroll containers can't clip it. */
+.hotspot--next.hotspot--left .hotspot__label,
+.hotspot--next.hotspot--left:hover .hotspot__label,
+.hotspot--next.hotspot--left:focus-visible .hotspot__label {
+  left: 0;
+  transform: none;
+}
+
+.hotspot--next.hotspot--right .hotspot__label,
+.hotspot--next.hotspot--right:hover .hotspot__label,
+.hotspot--next.hotspot--right:focus-visible .hotspot__label {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+@keyframes hotspot-spawn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes hotspot-flash {
   0%,
-  60%,
   100% {
+    transform: scale(1);
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
-  25% {
-    box-shadow: 0 0 0 8px rgba(134, 59, 255, 0.04);
+  50% {
+    transform: scale(1.45);
+    box-shadow: 0 0 0 9px rgba(134, 59, 255, 0.16);
   }
 }
 
@@ -1900,6 +1946,10 @@ ul {
   overflow: hidden;
 }
 
+.ide-terminal__content {
+  height: 100%;
+}
+
 .ide-terminal__body .vig-shell {
   height: 100%;
 }
@@ -2179,8 +2229,8 @@ ul {
 }
 
 .stop-panel__controls button {
-  flex: 1;
-  padding: 9px 0;
+  flex: 0 0 auto;
+  padding: 9px 16px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
@@ -2192,13 +2242,17 @@ ul {
   background: rgba(255, 255, 255, 0.14);
 }
 
-.stop-panel__controls button.is-primary {
-  background: var(--accent);
-  color: #fff;
+.stop-panel__next-hint {
+  flex: 1;
+  align-self: center;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(232, 232, 238, 0.6);
 }
 
-.stop-panel__controls button.is-primary:hover {
-  background: var(--accent-strong);
+.stop-panel__next-hint strong {
+  color: var(--accent-mid, #b98aff);
+  font-weight: 650;
 }
 
 /* ——— Completion challenges ——— */

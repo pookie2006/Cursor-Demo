@@ -21,12 +21,14 @@ import {
 import type { FeatureId } from '../features'
 import { stops, type TourStop } from '../tour'
 import { useSimProgress } from '../useSimProgress'
-import { Hotspot } from './Hotspot'
+import { Hotspot, type HotspotPlacement } from './Hotspot'
 import { Vignette } from './Vignette'
 
 type IdeLayoutProps = {
   activeStop: TourStop | null
   visited: Set<string>
+  /** The next unvisited stop in tour order — its dot flashes as the call to action. */
+  nextId: string | null
   scanning: boolean
   reduceMotion: boolean
   onSelectStop: (id: string) => void
@@ -111,6 +113,7 @@ function IconSliders() {
 export function IdeLayout({
   activeStop,
   visited,
+  nextId,
   scanning,
   reduceMotion,
   onSelectStop,
@@ -182,13 +185,27 @@ export function IdeLayout({
 
   const tourProgress = Math.round((visited.size / stops.length) * 100)
 
-  const hotspot = (id: string) => ({
-    id,
-    active: activeStop?.id === id,
-    visited: visited.has(id),
-    scanning,
-    onSelect: onSelectStop,
-  })
+  /**
+   * Dots spawn in tour order: only visited stops keep their dot, and the next
+   * unvisited stop flashes as the call to action. Everything else stays hidden.
+   */
+  const spot = (id: string, label: string, placement: HotspotPlacement) => {
+    const isActive = activeStop?.id === id
+    const isVisited = visited.has(id)
+    const isNext = nextId === id
+    if (!isActive && !isVisited && !isNext) return null
+    return (
+      <Hotspot
+        id={id}
+        label={label}
+        placement={placement}
+        active={isActive}
+        visited={isVisited}
+        next={isNext}
+        onSelect={onSelectStop}
+      />
+    )
+  }
 
   const showEditorFile = slot === 'editor-file' && slotVignette
 
@@ -216,7 +233,7 @@ export function IdeLayout({
                 <IconBolt />
                 <span>Automations</span>
               </span>
-              <Hotspot {...hotspot('automations')} label="Automations" placement="right" />
+              {spot('automations', 'Automations', 'right')}
             </div>
             <div className="agents-nav" aria-hidden="true">
               <IconSliders />
@@ -286,13 +303,19 @@ export function IdeLayout({
       <main className="agent-main">
         <header className="agent-main__header">
           <div className="agent-main__title">{projectName}</div>
-          <button type="button" className="agent-main__restart" onClick={onRestart}>
-            Replay intro
-          </button>
+          <span className="hotspot-anchor">
+            {spot('checkpoints', 'Checkpoints', 'left')}
+            <button type="button" className="agent-main__restart" onClick={onRestart}>
+              Replay intro
+            </button>
+          </span>
         </header>
 
         <div className="agent-main__scroll" data-region="chat">
-          <div className="agent-msg agent-msg--user">{userPrompt}</div>
+          <div className="agent-msg agent-msg--user hotspot-anchor">
+            {userPrompt}
+            {spot('mcp', 'MCP', 'left')}
+          </div>
 
           <div className="agent-msg agent-msg--ai">
             <div className="agent-msg__text hotspot-anchor">
@@ -300,7 +323,8 @@ export function IdeLayout({
                 {agentReply.slice(0, replyChars)}
                 {isTyping && <span className="agent-caret" aria-hidden="true" />}
               </p>
-              <Hotspot {...hotspot('agent')} label="Agent" placement="left" />
+              {spot('agent', 'Agent', 'left')}
+              {spot('subagents', 'Subagents', 'right')}
             </div>
 
             {filesShown > 0 && (
@@ -308,8 +332,11 @@ export function IdeLayout({
                 <div className="agent-files">
                   <div className="agent-files__head">
                     <span>{filesShown} Files Changed</span>
-                    <span className={`agent-files__meta${diffRow >= 0 ? ' is-lit' : ''}`}>
+                    <span
+                      className={`agent-files__meta hotspot-anchor${diffRow >= 0 ? ' is-lit' : ''}`}
+                    >
                       Review
+                      {spot('bugbot', 'Bugbot', 'top')}
                     </span>
                   </div>
                   <ul>
@@ -324,7 +351,8 @@ export function IdeLayout({
                     ))}
                   </ul>
                 </div>
-                <Hotspot {...hotspot('diffs')} label="Files Changed" placement="left" />
+                {spot('diffs', 'Files Changed', 'left')}
+                {spot('worktrees', 'Worktrees', 'right')}
 
                 {slot === 'files' && slotVignette && (
                   <div className="files-vig" aria-hidden="true">
@@ -346,7 +374,7 @@ export function IdeLayout({
         <div className="agent-input" data-region="input">
           {scanning && (
             <p className="cursor-ui__hint">
-              Click a hotspot to start, or press <kbd>→</kbd> to take the tour
+              Click the flashing dot to start the tour, or press <kbd>→</kbd>
             </p>
           )}
 
@@ -377,9 +405,10 @@ export function IdeLayout({
           <div className="agent-input__box">
             <div className="agent-input__plus hotspot-anchor">
               <span aria-hidden="true">@</span>
-              <Hotspot {...hotspot('context')} label="@ Mentions" placement="top" />
+              {spot('context', '@ Mentions', 'top')}
             </div>
-            <div className="agent-input__field">
+            <div className="agent-input__field hotspot-anchor">
+              {spot('context-ring', 'Context Ring', 'top')}
               {mentionAttached && (
                 <span className="mention-chip" aria-hidden="true">
                   @{contextMentions[mentionIndex].label}
@@ -403,11 +432,11 @@ export function IdeLayout({
                   ⇧Tab
                 </kbd>
               )}
-              <Hotspot {...hotspot('modes')} label="Modes" placement="top" />
+              {spot('modes', 'Modes', 'top')}
             </div>
             <div className="agent-input__model hotspot-anchor">
               <span aria-hidden="true">Cursor Grok 4.5</span>
-              <Hotspot {...hotspot('models')} label="Models" placement="top" />
+              {spot('models', 'Models', 'top')}
 
               {slot === 'popover-model' && slotVignette && (
                 <div className="model-pop" aria-hidden="true">
@@ -427,10 +456,12 @@ export function IdeLayout({
       <section className="code-panel" data-region="code-panel">
         <div className="code-panel__tabs">
           <div
-            className={`code-panel__tab${browserActive || showEditorFile ? '' : ' is-active'}`}
-            aria-hidden="true"
+            className={`code-panel__tab hotspot-anchor${
+              browserActive || showEditorFile ? '' : ' is-active'
+            }`}
           >
-            {editorFile}
+            <span aria-hidden="true">{editorFile}</span>
+            {spot('skills', 'Skills', 'bottom')}
           </div>
           {showEditorFile && (
             <div className="code-panel__tab is-active is-temp" aria-hidden="true">
@@ -439,20 +470,23 @@ export function IdeLayout({
           )}
           <div className={`code-panel__tab hotspot-anchor${browserActive ? ' is-active' : ''}`}>
             <span aria-hidden="true">Browser</span>
-            <Hotspot {...hotspot('browser')} label="Browser" placement="bottom" />
+            {spot('browser', 'Browser', 'bottom')}
           </div>
         </div>
 
-        <div className="code-panel__breadcrumb" aria-hidden="true">
-          {showEditorFile ? (
-            <>
-              .cursor <span>›</span> {activeStop?.fileName}
-            </>
-          ) : (
-            <>
-              src <span>›</span> components <span>›</span> {editorFile}
-            </>
-          )}
+        <div className="code-panel__breadcrumb hotspot-anchor">
+          <span aria-hidden="true">
+            {showEditorFile ? (
+              <>
+                .cursor <span>›</span> {activeStop?.fileName}
+              </>
+            ) : (
+              <>
+                src <span>›</span> components <span>›</span> {editorFile}
+              </>
+            )}
+          </span>
+          {spot('rules', 'Rules', 'bottom')}
         </div>
 
         <div className="code-panel__body" data-region="editor">
@@ -519,7 +553,7 @@ export function IdeLayout({
                           Tab
                         </kbd>
                       )}
-                      <Hotspot {...hotspot('tab')} label="Tab" placement="left" />
+                      {spot('tab', 'Tab', 'left')}
                     </div>
                   )
                 })}
@@ -552,7 +586,7 @@ export function IdeLayout({
                     )}
                     <kbd>⌘K</kbd>
                   </span>
-                  <Hotspot {...hotspot('inline-edit')} label="Inline Edit" placement="top" />
+                  {spot('inline-edit', 'Inline Edit', 'top')}
                 </div>
               </div>
             </div>
@@ -562,30 +596,38 @@ export function IdeLayout({
         <div className="ide-terminal" data-region="terminal">
           <div className="ide-terminal__head hotspot-anchor">
             <span aria-hidden="true">Terminal</span>
-            <span className="ide-terminal__shell" aria-hidden="true">
-              zsh — {projectName}
+            <span className="ide-terminal__shell hotspot-anchor">
+              <span aria-hidden="true">zsh — {projectName}</span>
+              {spot('cli', 'CLI', 'top')}
             </span>
-            <Hotspot {...hotspot('hooks')} label="Terminal" placement="top" />
+            {spot('hooks', 'Hooks', 'top')}
           </div>
-          <div className="ide-terminal__body" aria-hidden="true">
-            {slot === 'terminal' && slotVignette ? (
-              <Vignette spec={slotVignette} active reduceMotion={reduceMotion} />
-            ) : (
-              <div className="ide-terminal__idle">
-                <div className="vig-row vig-cmd">
-                  <span className="vig-prompt">$</span>
-                  <span>npm run dev</span>
+          <div className="ide-terminal__body hotspot-anchor">
+            {spot('cloud', 'Cloud Agents', 'left')}
+            {spot('runmodes', 'Run Modes', 'right')}
+            <div className="ide-terminal__content" aria-hidden="true">
+              {slot === 'terminal' && slotVignette ? (
+                <Vignette spec={slotVignette} active reduceMotion={reduceMotion} />
+              ) : (
+                <div className="ide-terminal__idle">
+                  <div className="vig-row vig-cmd">
+                    <span className="vig-prompt">$</span>
+                    <span>npm run dev</span>
+                  </div>
+                  <div className="vig-row vig-out--dim">➜ CampusEvents ready on localhost:3000</div>
                 </div>
-                <div className="vig-row vig-out--dim">➜ CampusEvents ready on localhost:3000</div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="code-panel__status" aria-hidden="true">
-          <span>main*</span>
-          <span>TypeScript React</span>
-          <span>Ln 8, Col 1</span>
+        <div className="code-panel__status">
+          <span aria-hidden="true">main*</span>
+          <span className="hotspot-anchor">
+            <span aria-hidden="true">TypeScript React</span>
+            {spot('sdk', 'SDK', 'top')}
+          </span>
+          <span aria-hidden="true">Ln 8, Col 1</span>
         </div>
       </section>
     </motion.div>

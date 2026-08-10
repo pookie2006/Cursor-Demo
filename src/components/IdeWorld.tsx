@@ -46,6 +46,9 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
   const activeStop: TourStop | null = activeId ? (stopById.get(activeId) ?? null) : null
   const index = activeId ? stops.findIndex((stop) => stop.id === activeId) : -1
 
+  // Dots spawn in tour order: the first unvisited stop is the flashing call to action.
+  const nextStop = stops.find((stop) => !visited.has(stop.id)) ?? null
+
   useEffect(() => {
     const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
     window.addEventListener('resize', onResize)
@@ -223,6 +226,7 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
         <IdeLayout
           activeStop={activeStop}
           visited={visited}
+          nextId={nextStop?.id ?? null}
           scanning={!activeId && visited.size === 0}
           reduceMotion={reduceMotion}
           onSelectStop={select}
@@ -237,9 +241,9 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             stop={activeStop}
             index={index}
             side={panelSide}
+            nextTitle={nextStop && nextStop.id !== activeStop.id ? nextStop.title : null}
             reduceMotion={reduceMotion}
             onPrev={() => step(-1)}
-            onNext={() => step(1)}
             onClose={zoomOut}
           />
         )}
@@ -254,9 +258,6 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             <span className="world-tourbar__stop">
               {index + 1}/{stops.length} · {activeStop.title}
             </span>
-            <button type="button" onClick={() => step(1)} aria-label="Next stop">
-              →
-            </button>
             <button type="button" className="world-tourbar__end" onClick={zoomOut}>
               Overview
             </button>
@@ -304,17 +305,17 @@ function StopPanel({
   stop,
   index,
   side,
+  nextTitle,
   reduceMotion,
   onPrev,
-  onNext,
   onClose,
 }: {
   stop: TourStop
   index: number
   side: 'left' | 'right'
+  nextTitle: string | null
   reduceMotion: boolean
   onPrev: () => void
-  onNext: () => void
   onClose: () => void
 }) {
   const slide = side === 'right' ? 24 : -24
@@ -369,9 +370,13 @@ function StopPanel({
         <button type="button" onClick={onPrev}>
           ← Prev
         </button>
-        <button type="button" className="is-primary" onClick={onNext}>
-          Next →
-        </button>
+        {nextTitle ? (
+          <span className="stop-panel__next-hint">
+            Next: <strong>{nextTitle}</strong> — click the flashing dot
+          </span>
+        ) : (
+          <span className="stop-panel__next-hint">Tour complete — Esc for the overview</span>
+        )}
       </div>
     </motion.aside>
   )

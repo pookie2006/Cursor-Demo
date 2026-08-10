@@ -5,8 +5,8 @@ type HotspotProps = {
   label: string
   active: boolean
   visited: boolean
-  /** Plays a one-time attention pulse while the tour is still undiscovered. */
-  scanning?: boolean
+  /** This is the next stop in the tour — flash it so the eye knows where to go. */
+  next?: boolean
   placement?: HotspotPlacement
   onSelect: (id: string) => void
 }
@@ -16,7 +16,7 @@ export function Hotspot({
   label,
   active,
   visited,
-  scanning = false,
+  next = false,
   placement = 'right',
   onSelect,
 }: HotspotProps) {
@@ -25,7 +25,7 @@ export function Hotspot({
     `hotspot--${placement}`,
     active && 'hotspot--active',
     visited && 'hotspot--visited',
-    scanning && 'hotspot--scanning',
+    next && 'hotspot--next',
   ]
     .filter(Boolean)
     .join(' ')
