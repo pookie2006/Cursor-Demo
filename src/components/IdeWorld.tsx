@@ -3,7 +3,24 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 import { IdeLayout } from './IdeLayout'
 import { CompletionCard } from './CompletionCard'
-import { stopById, stops, type TourStop } from '../tour'
+import { isStopId, stopById, stops, type TourStop } from '../tour'
+
+const VISITED_KEY = 'cursor-tour-visited'
+
+/** Dev-server reloads and deep links must not lose already-spawned dots. */
+function loadVisited(initialStopId: string | null): Set<string> {
+  const set = new Set<string>()
+  if (typeof window !== 'undefined') {
+    try {
+      const saved: unknown = JSON.parse(window.sessionStorage.getItem(VISITED_KEY) ?? '[]')
+      if (Array.isArray(saved)) for (const id of saved) if (isStopId(id)) set.add(id)
+    } catch {
+      /* corrupt storage — start fresh */
+    }
+  }
+  if (initialStopId) set.add(initialStopId)
+  return set
+}
 
 const IDE_W = 1440
 const IDE_H = 900
@@ -30,9 +47,7 @@ interface IdeWorldProps {
  */
 export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldProps) {
   const [activeId, setActiveId] = useState<string | null>(initialStopId)
-  const [visited, setVisited] = useState<Set<string>>(
-    () => new Set(initialStopId ? [initialStopId] : []),
-  )
+  const [visited, setVisited] = useState<Set<string>>(() => loadVisited(initialStopId))
   const [showHelp, setShowHelp] = useState(false)
   const [completionDismissed, setCompletionDismissed] = useState(false)
   const [anchor, setAnchor] = useState<Rect | null>(null)
@@ -55,6 +70,10 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  useEffect(() => {
+    window.sessionStorage.setItem(VISITED_KEY, JSON.stringify([...visited]))
+  }, [visited])
 
   // Shareable deep links: #/skills, #/worktrees, …
   useEffect(() => {
@@ -222,12 +241,14 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
     ty = areaY + areaH / 2 - scale * (anchor.y + anchor.h / 2)
 
     // Keep the frame flush with the screen edges when it overflows them, so
-    // zoomed stops never show dead space around the IDE.
+    // zoomed stops never show dead space around the IDE. The bottom keeps a
+    // band clear so the fixed tour bar never covers status-bar dots.
+    const bottomReserve = 52
     if (IDE_W * scale >= viewport.w) {
       tx = Math.min(0, Math.max(viewport.w - IDE_W * scale, tx))
     }
-    if (IDE_H * scale >= viewport.h) {
-      ty = Math.min(0, Math.max(viewport.h - IDE_H * scale, ty))
+    if (IDE_H * scale >= viewport.h - bottomReserve) {
+      ty = Math.min(0, Math.max(viewport.h - bottomReserve - IDE_H * scale, ty))
     }
   }
 
@@ -245,7 +266,9 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
       nextDotOnScreen = cx >= leftEdge && cx <= rightEdge && cy >= 16 && cy <= viewport.h - 76
     }
   }
-  const zoomOutPulse = Boolean(activeStop && nextStop && !nextDotOnScreen)
+  // Pulse the way out when the next dot can't be seen — or, once the tour is
+  // complete, to guide the presenter back to the overview (Esc does the same).
+  const zoomOutPulse = Boolean(activeStop && (nextStop ? !nextDotOnScreen : true))
 
   return (
     <div
@@ -427,7 +450,9 @@ function StopPanel({
             {nextDotOnScreen ? 'click the flashing dot' : 'zoom out to find the flashing dot'}
           </span>
         ) : (
-          <span className="stop-panel__next-hint">Tour complete — Esc for the overview</span>
+          <span className="stop-panel__next-hint stop-panel__next-hint--done">
+            Tour complete — press <kbd>Esc</kbd> for the overview
+          </span>
         )}
       </div>
     </motion.aside>

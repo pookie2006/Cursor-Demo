@@ -622,11 +622,11 @@ export function IdeLayout({
         </div>
 
         <div className="code-panel__status">
-          <span aria-hidden="true">main*</span>
           <span className="hotspot-anchor">
-            <span aria-hidden="true">TypeScript React</span>
+            <span aria-hidden="true">main*</span>
             {spot('sdk', 'SDK', 'top')}
           </span>
+          <span aria-hidden="true">TypeScript React</span>
           <span aria-hidden="true">Ln 8, Col 1</span>
         </div>
       </section>
