@@ -1973,6 +1973,11 @@ ul {
   height: 100%;
 }
 
+/* The terminal body clips its own overflow, so keep its dots inside the box. */
+.ide-terminal__body > .hotspot--left {
+  left: 8px;
+}
+
 .ide-terminal__body .vig-shell {
   height: 100%;
 }
