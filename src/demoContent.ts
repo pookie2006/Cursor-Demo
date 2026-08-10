@@ -1,6 +1,8 @@
 /**
- * Content for the simulated Cursor session: one believable task carried through
- * the chat transcript, the file-change list, and the editor.
+ * Content for the simulated Cursor session: one believable student project —
+ * CampusEvents, an event planning site for a college CS club — carried through
+ * the chat transcript, the file-change list, the editor, and every advanced
+ * feature vignette in the world map.
  */
 
 export type TokenKind = 'kw' | 'fn' | 'str' | 'type' | 'punc' | 'prop'
@@ -23,31 +25,35 @@ export interface ChangedFile {
   del: number
 }
 
+export const projectName = 'campus-events'
+
 export const userPrompt =
-  'Add a waitlist to the landing page — email field, validation, POST /api/waitlist, and a success toast.'
+  'Build CampusEvents — an event planning site for our CS club. Event list, RSVP with email confirmation, and a month calendar view.'
 
 export const agentReply =
-  'I’ll add a WaitlistForm component, an API route with Zod validation, and wire up a toast on success. Checking your existing form patterns first.'
+  'I’ll scaffold an events page, an RsvpForm component, and a POST /api/rsvp route that sends confirmation emails. Checking your routing setup first.'
 
 export const changedFiles: ChangedFile[] = [
-  { name: 'src/components/WaitlistForm.tsx', add: 47, del: 0 },
-  { name: 'src/app/api/waitlist/route.ts', add: 32, del: 0 },
-  { name: 'src/lib/validation.ts', add: 18, del: 0 },
-  { name: 'src/app/page.tsx', add: 12, del: 3 },
-  { name: 'src/components/Hero.tsx', add: 8, del: 2 },
+  { name: 'src/components/RsvpForm.tsx', add: 54, del: 0 },
+  { name: 'src/app/api/rsvp/route.ts', add: 38, del: 0 },
+  { name: 'src/components/EventCard.tsx', add: 26, del: 0 },
+  { name: 'src/app/events/page.tsx', add: 19, del: 4 },
+  { name: 'src/lib/email.ts', add: 22, del: 0 },
 ]
 
-export const followUpPrompt = 'Add rate limiting to /api/waitlist — 5 req/min per IP'
+export const followUpPrompt = 'Add a capacity limit — waitlist people after 40 RSVPs'
 
-export const editorFile = 'WaitlistForm.tsx'
+export const editorFile = 'RsvpForm.tsx'
 
 export const codeLines: CodeLine[] = [
   {
     n: 1,
     tokens: [
       { text: 'export function ', kind: 'kw' },
-      { text: 'WaitlistForm', kind: 'fn' },
-      { text: '() {' },
+      { text: 'RsvpForm', kind: 'fn' },
+      { text: '({ eventId }: ' },
+      { text: 'RsvpProps', kind: 'type' },
+      { text: ') {' },
     ],
   },
   {
@@ -110,51 +116,63 @@ export const codeLines: CodeLine[] = [
       { text: '    await ', kind: 'kw' },
       { text: 'fetch', kind: 'fn' },
       { text: '(' },
-      { text: "'/api/waitlist'", kind: 'str' },
+      { text: "'/api/rsvp'", kind: 'str' },
       { text: ', { method: ' },
       { text: "'POST'", kind: 'str' },
-      { text: ' })' },
+      { text: ', body: eventId })' },
     ],
   },
   { n: 9, tokens: [{ text: '  }' }] },
   { n: 10, tokens: [{ text: '}' }] },
 ]
 
-export const inlineEditPrompt = 'Add client-side email validation with an inline error'
+export const inlineEditPrompt = 'Validate the campus email domain with an inline error'
 
 /** The line Inline Edit inserts once its prompt is submitted. */
 export const inlineEditResult: CodeToken[] = [
   { text: '    if', kind: 'kw' },
-  { text: ' (!' },
-  { text: 'isValidEmail', kind: 'fn' },
-  { text: '(email)) ' },
+  { text: ' (!email.' },
+  { text: 'endsWith', kind: 'fn' },
+  { text: '(' },
+  { text: "'@college.edu'", kind: 'str' },
+  { text: ')) ' },
   { text: 'return', kind: 'kw' },
   { text: ' ' },
   { text: 'setError', kind: 'fn' },
   { text: '(' },
-  { text: "'Enter a valid email'", kind: 'str' },
+  { text: "'Use your campus email'", kind: 'str' },
   { text: ')' },
 ]
 
 export const contextMentions = [
-  { label: 'WaitlistForm.tsx', meta: 'File' },
-  { label: 'src/lib/validation.ts', meta: 'File' },
+  { label: 'RsvpForm.tsx', meta: 'File' },
+  { label: 'src/lib/email.ts', meta: 'File' },
   { label: 'Branch', meta: 'Diff with main' },
-  { label: 'Docs', meta: 'Zod' },
+  { label: 'Docs', meta: 'Resend' },
 ]
 
 export const modeNames = ['Agent', 'Ask', 'Plan', 'Debug'] as const
 
 export const repos = [
-  { name: 'acme-landing', active: true },
-  { name: 'acme-api', active: false },
-  { name: 'design-system', active: false },
+  { name: 'campus-events', active: true },
+  { name: 'cs-club-site', active: false },
+  { name: 'algo-study-notes', active: false },
 ]
 
 export const automationRuns = [
-  { name: 'Update dependencies', when: 'Every Monday, 9:00' },
+  { name: 'Nightly event digest', when: 'Every day, 08:00' },
   { name: 'Triage failing tests', when: 'On CI failure' },
 ]
+
+/** Fake browser preview shown when the Browser feature runs. */
+export const preview = {
+  url: 'localhost:3000/events/demo-night',
+  heading: 'CS Club Demo Night',
+  sub: 'Thu 7:00 PM · Mudd 233 · 12 of 40 spots left',
+  emailPlaceholder: 'you@college.edu',
+  button: 'RSVP',
+  toast: 'You’re in — see you Thursday!',
+}
 
 export function lineText(tokens: CodeToken[]): string {
   return tokens.map((token) => token.text).join('')

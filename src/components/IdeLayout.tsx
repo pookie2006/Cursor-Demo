@@ -11,6 +11,8 @@ import {
   inlineEditResult,
   lineText,
   modeNames,
+  preview,
+  projectName,
   repos,
   sliceTokens,
   userPrompt,
@@ -269,7 +271,7 @@ export function IdeLayout({
       {/* ——— Main Agent chat ——— */}
       <main className="agent-main">
         <header className="agent-main__header">
-          <div className="agent-main__title">acme-landing</div>
+          <div className="agent-main__title">{projectName}</div>
           <button type="button" className="agent-main__restart" onClick={onRestart}>
             Replay intro
           </button>
@@ -401,20 +403,20 @@ export function IdeLayout({
         {browserActive ? (
           <div className="browser-preview" aria-hidden="true">
             <div className="browser-preview__bar">
-              <span className="browser-preview__url">localhost:3000</span>
+              <span className="browser-preview__url">{preview.url}</span>
               {previewVerified && <span className="browser-preview__check">Verified by Agent</span>}
             </div>
             <div className="browser-preview__page">
-              <div className="browser-preview__heading">Join the waitlist</div>
-              <div className="browser-preview__sub">Be first to hear when we launch.</div>
+              <div className="browser-preview__heading">{preview.heading}</div>
+              <div className="browser-preview__sub">{preview.sub}</div>
               <div className="browser-preview__form">
                 <div className="browser-preview__input">
-                  {'you@company.com'.slice(0, previewTyped)}
+                  {preview.emailPlaceholder.slice(0, previewTyped)}
                   <i />
                 </div>
-                <div className="browser-preview__button">Join</div>
+                <div className="browser-preview__button">{preview.button}</div>
               </div>
-              {previewVerified && <div className="browser-preview__toast">You’re on the list</div>}
+              {previewVerified && <div className="browser-preview__toast">{preview.toast}</div>}
             </div>
           </div>
         ) : (
