@@ -2287,6 +2287,10 @@ ul {
   color: rgba(232, 232, 238, 0.7);
 }
 
+.stop-panel__try p {
+  margin: 0 0 8px;
+}
+
 .stop-panel__try strong {
   margin-right: 8px;
   font-size: 10px;
@@ -2403,6 +2407,424 @@ ul {
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
+}
+
+/* ——— Intro tagline & identity ——— */
+.logo-intro__hint p {
+  margin: 0;
+}
+
+.logo-intro__tagline {
+  max-width: 520px;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  line-height: 1.5;
+}
+
+.logo-intro__identity {
+  margin-top: 8px !important;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ——— Path chips (crash course / tracks / all) ——— */
+.world-paths {
+  position: fixed;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: min(920px, 94vw);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(12, 12, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.world-paths__chip {
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(232, 232, 238, 0.7);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.world-paths__chip:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.world-paths__chip.is-active {
+  background: var(--dot);
+  color: #fff;
+}
+
+.world-paths__mission {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ff9a66;
+}
+
+/* ——— Act label in the tour bar ——— */
+.world-tourbar__act {
+  display: block;
+  margin-top: 1px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(232, 232, 238, 0.45);
+}
+
+/* ——— Stop panel: sim badge, copy, checkpoints, live howto ——— */
+.stop-panel__sim-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(232, 232, 238, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.stop-panel__try-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stop-panel__copy,
+.stop-panel__ran {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(232, 232, 238, 0.85);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stop-panel__copy:hover,
+.stop-panel__ran:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.stop-panel__copy {
+  background: rgba(245, 78, 0, 0.18);
+  color: #ffb18a;
+}
+
+.stop-panel__copy:hover {
+  background: rgba(245, 78, 0, 0.3);
+}
+
+.stop-panel__ran.is-done {
+  background: rgba(23, 128, 61, 0.25);
+  color: #7fdba0;
+}
+
+.stop-panel__live {
+  font-size: 12px;
+  color: rgba(232, 232, 238, 0.6);
+}
+
+.stop-panel__live summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: rgba(232, 232, 238, 0.75);
+}
+
+.stop-panel__live summary:hover {
+  color: #fff;
+}
+
+.stop-panel__live ol {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  line-height: 1.45;
+}
+
+.stop-panel__live a {
+  color: #ff9a66;
+}
+
+/* ——— Help overlay note ——— */
+.world-help__note {
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(232, 232, 238, 0.55);
+}
+
+/* ——— Completion: starter handoff & locked challenges ——— */
+.completion__handoff {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  text-align: left;
+}
+
+.completion__handoff-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.completion__clone {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #16161e;
+  color: #ffb18a;
+  font-family: var(--mono);
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.completion__handoff-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.completion__handoff-actions .completion__secondary {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.76rem;
+  text-decoration: none;
+  text-align: center;
+}
+
+.completion__handoff-hint {
+  margin: 10px 0 0;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.completion__locked {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-strong);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+/* ——— Narrow-viewport list fallback ——— */
+.tour-list {
+  min-height: 100vh;
+  padding: 28px 18px 60px;
+  background: #0c0c12;
+  color: #e8e8ee;
+  overflow-y: auto;
+}
+
+.tour-list__head {
+  max-width: 560px;
+  margin: 0 auto 22px;
+}
+
+.tour-list__head h1 {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+.tour-list__head > p {
+  margin: 0 0 14px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: rgba(232, 232, 238, 0.65);
+}
+
+.tour-list__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.tour-list__chips button {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(232, 232, 238, 0.7);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.tour-list__chips button.is-active {
+  background: var(--dot);
+  color: #fff;
+}
+
+.tour-list__mission {
+  margin: 0 0 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ff9a66;
+}
+
+.tour-list__progress {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(232, 232, 238, 0.45);
+}
+
+.tour-list__stops {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tour-list__act {
+  margin: 16px 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ff9a66;
+}
+
+.tour-list__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tour-list__row.is-visited {
+  border-color: rgba(245, 78, 0, 0.4);
+}
+
+.tour-list__row.is-open {
+  border-color: var(--dot);
+  background: rgba(245, 78, 0, 0.08);
+}
+
+.tour-list__title {
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: #fff;
+}
+
+.tour-list__kicker {
+  font-size: 0.74rem;
+  color: rgba(232, 232, 238, 0.55);
+}
+
+.tour-list__detail {
+  padding: 12px 14px 14px;
+  border-radius: 0 0 12px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: none;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: rgba(232, 232, 238, 0.75);
+}
+
+.tour-list__headline {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.tour-list__detail ul {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tour-list__fail {
+  margin: 0 0 10px;
+}
+
+.tour-list__fail strong {
+  color: #ff9a66;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+
+.tour-list__try {
+  margin: 0 0 10px;
+}
+
+.tour-list__try code {
+  display: block;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #16161e;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #ffb18a;
+  word-break: break-word;
+}
+
+.tour-list__try-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.tour-list__try-actions button {
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(232, 232, 238, 0.85);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.tour-list__try-actions button.is-done {
+  background: rgba(23, 128, 61, 0.25);
+  color: #7fdba0;
+}
+
+.tour-list__detail > a {
+  color: #ff9a66;
+  font-size: 0.76rem;
+  text-decoration: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

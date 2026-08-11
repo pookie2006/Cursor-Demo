@@ -1,10 +1,10 @@
-# Cursor Demo
+# Cursor Demo — the agent control plane, as a tour
 
-An interactive, animated product tour of [Cursor](https://cursor.com), built as a single-page React app. It opens on the Cursor logo, zooms into a simulated IDE, and walks through Cursor's features with glowing hotspots and in-IDE simulations.
+An interactive, animated product tour of [Cursor](https://cursor.com), built as a single-page React app. It opens on the Cursor logo, zooms into a simulated IDE, and walks through Cursor's features with glowing hotspots and in-IDE simulations. The narrative project is **Lion Events** — an event planning site for Columbia clubs (Lerner, Mudd, ACM@CU, DevFest, NetID RSVPs).
 
 ## Features covered in the tour
 
-Agent, Modes, Models & Auto, @ Context, Context Ring, Tab, Inline Edit (⌘K), Rules & AGENTS.md, Skills, Hooks, MCP, Subagents & Multitask, Worktrees & best-of-n, Checkpoints & Queue, Cloud Agents, Automations + Memories, CLI, SDK, Browser, Files Changed, Bugbot & /review, Run Modes & Sandbox, and more.
+Agent, Modes, Models & Auto, @ Context, Context Ring, Tab, Inline Edit (⌘K), Rules & AGENTS.md, Skills, Hooks, MCP, Subagents & Multitask, Worktrees & best-of-n, Checkpoints & Queue, Cloud Agents, Automations + Memories, CLI, SDK, Browser, Files Changed, Bugbot & /review, Run Modes & Sandbox — ordered as a 4-act storyboard (Local loop → Context & policy → Parallel & external → Ship & harden).
 
 ## How it works
 
@@ -15,6 +15,22 @@ Agent, Modes, Models & Auto, @ Context, Context Ring, Tab, Inline Edit (⌘K), R
 5. Press `Esc` to zoom back out to the overview
 
 Tour progress is persisted across reloads.
+
+### Paths: crash course, tracks, explore all
+
+The chips at the top of the overview pick the path the guided tour walks:
+
+- **Crash course · 8** (default) — the essentials, on the mission "Friday club fair in Lerner — ship waitlist before 5pm."
+- **Core loop / Agent systems / Ship & harden** — presenter tracks
+- **Explore all · 22** — the full storyboard
+
+Every stop's **Try** line is one-click copyable, and students can mark prompts they actually ran ("I ran this in Cursor") — three marks unlock the stretch challenges on the completion card. The completion card also hands off a real starter repo (`starter/lion-events`) via a copyable clone command.
+
+On screens narrower than ~900px the demo falls back to a grouped stop list instead of the scaled IDE.
+
+### Keyboard
+
+`G` tour · `←/→` stops · `Esc` out · `1–9, 0` jump to stops 1–10 · `A–F, H–M` stops 11–22 · `?` help.
 
 ### Deep links
 

@@ -19,7 +19,7 @@ import {
   type CodeToken,
 } from '../demoContent'
 import type { FeatureId } from '../features'
-import { stops, type TourStop } from '../tour'
+import type { TourStop } from '../tour'
 import { useSimProgress } from '../useSimProgress'
 import { Hotspot, type HotspotPlacement } from './Hotspot'
 import { Vignette } from './Vignette'
@@ -27,7 +27,10 @@ import { Vignette } from './Vignette'
 type IdeLayoutProps = {
   activeStop: TourStop | null
   visited: Set<string>
-  /** The next unvisited stop in tour order — its dot flashes as the call to action. */
+  /** Stops in the currently selected path (crash course / track / all). */
+  pathIds: Set<string>
+  pathTotal: number
+  /** The next unvisited stop in path order — its dot flashes as the call to action. */
   nextId: string | null
   scanning: boolean
   reduceMotion: boolean
@@ -113,6 +116,8 @@ function IconSliders() {
 export function IdeLayout({
   activeStop,
   visited,
+  pathIds,
+  pathTotal,
   nextId,
   scanning,
   reduceMotion,
@@ -183,15 +188,17 @@ export function IdeLayout({
     : 0
   const automationRunning = isSim('automations') && progress > 0.78
 
-  const tourProgress = Math.round((visited.size / stops.length) * 100)
+  const pathVisited = [...visited].filter((id) => pathIds.has(id)).length
+  const tourProgress = Math.round((pathVisited / pathTotal) * 100)
 
   /**
-   * Dots spawn in tour order: only visited stops keep their dot, and the next
-   * unvisited stop flashes as the call to action. Everything else stays hidden.
+   * Dots spawn in path order: only visited stops keep their dot, and the next
+   * unvisited stop flashes as the call to action. Stops outside the selected
+   * path (crash course / track) stay hidden entirely.
    */
   const spot = (id: string, label: string, placement: HotspotPlacement) => {
     const isActive = activeStop?.id === id
-    const isVisited = visited.has(id)
+    const isVisited = visited.has(id) && pathIds.has(id)
     const isNext = nextId === id
     if (!isActive && !isVisited && !isNext) return null
     return (
@@ -278,15 +285,15 @@ export function IdeLayout({
             <div
               className="agents-bar__progress"
               role="progressbar"
-              aria-valuenow={visited.size}
+              aria-valuenow={pathVisited}
               aria-valuemin={0}
-              aria-valuemax={stops.length}
+              aria-valuemax={pathTotal}
               aria-label="Features explored"
             >
               <i style={{ width: `${tourProgress}%` }} />
             </div>
             <span className="agents-bar__progress-count">
-              {visited.size}/{stops.length}
+              {pathVisited}/{pathTotal}
             </span>
           </div>
           <div className="agents-bar__profile" aria-hidden="true">
@@ -614,7 +621,7 @@ export function IdeLayout({
                     <span className="vig-prompt">$</span>
                     <span>npm run dev</span>
                   </div>
-                  <div className="vig-row vig-out--dim">➜ CampusEvents ready on localhost:3000</div>
+                  <div className="vig-row vig-out--dim">➜ Lion Events ready on localhost:3000 · Morningside</div>
                 </div>
               )}
             </div>

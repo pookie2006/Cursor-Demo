@@ -3,9 +3,24 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 import { IdeLayout } from './IdeLayout'
 import { CompletionCard } from './CompletionCard'
-import { isStopId, stopById, stops, type TourStop } from '../tour'
+import { TourList } from './TourList'
+import {
+  JUMP_KEYS,
+  actTitle,
+  crashMission,
+  isPathId,
+  isStopId,
+  pathStops,
+  stopById,
+  stops,
+  tracks,
+  type PathId,
+  type TourStop,
+} from '../tour'
 
 const VISITED_KEY = 'cursor-tour-visited'
+const PATH_KEY = 'lion-tour-path'
+const RAN_KEY = 'lion-tour-ran'
 
 /** Dev-server reloads and deep links must not lose already-spawned dots. */
 function loadVisited(initialStopId: string | null): Set<string> {
@@ -22,10 +37,38 @@ function loadVisited(initialStopId: string | null): Set<string> {
   return set
 }
 
+function loadPath(initialStopId: string | null): PathId {
+  if (typeof window !== 'undefined') {
+    const saved = window.sessionStorage.getItem(PATH_KEY)
+    if (saved && isPathId(saved)) {
+      // A deep link outside the saved path widens the view instead of hiding the stop.
+      if (initialStopId && !pathStops(saved).some((stop) => stop.id === initialStopId)) return 'all'
+      return saved
+    }
+  }
+  if (initialStopId && !pathStops('crash').some((stop) => stop.id === initialStopId)) return 'all'
+  return 'crash'
+}
+
+/** Try prompts the student marked as actually run — survives sessions. */
+function loadRan(): Set<string> {
+  const set = new Set<string>()
+  if (typeof window !== 'undefined') {
+    try {
+      const saved: unknown = JSON.parse(window.localStorage.getItem(RAN_KEY) ?? '[]')
+      if (Array.isArray(saved)) for (const id of saved) if (isStopId(id)) set.add(id)
+    } catch {
+      /* corrupt storage — start fresh */
+    }
+  }
+  return set
+}
+
 const IDE_W = 1440
 const IDE_H = 900
 const PANEL_W = 380
 const MAX_ZOOM = 2.2
+const NARROW_W = 900
 
 interface Rect {
   x: number
@@ -48,6 +91,8 @@ interface IdeWorldProps {
 export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldProps) {
   const [activeId, setActiveId] = useState<string | null>(initialStopId)
   const [visited, setVisited] = useState<Set<string>>(() => loadVisited(initialStopId))
+  const [path, setPath] = useState<PathId>(() => loadPath(initialStopId))
+  const [ran, setRan] = useState<Set<string>>(loadRan)
   const [showHelp, setShowHelp] = useState(false)
   const [completionDismissed, setCompletionDismissed] = useState(false)
   const [anchor, setAnchor] = useState<Rect | null>(null)
@@ -59,11 +104,14 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
   const frameRef = useRef<HTMLDivElement>(null)
   const wheelAt = useRef(0)
 
-  const activeStop: TourStop | null = activeId ? (stopById.get(activeId) ?? null) : null
-  const index = activeId ? stops.findIndex((stop) => stop.id === activeId) : -1
+  const narrow = viewport.w < NARROW_W
 
-  // Dots spawn in tour order: the first unvisited stop is the flashing call to action.
-  const nextStop = stops.find((stop) => !visited.has(stop.id)) ?? null
+  const walk = pathStops(path)
+  const activeStop: TourStop | null = activeId ? (stopById.get(activeId) ?? null) : null
+  const index = activeId ? walk.findIndex((stop) => stop.id === activeId) : -1
+
+  // Dots spawn in path order: the first unvisited stop is the flashing call to action.
+  const nextStop = walk.find((stop) => !visited.has(stop.id)) ?? null
 
   useEffect(() => {
     const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
@@ -75,18 +123,42 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
     window.sessionStorage.setItem(VISITED_KEY, JSON.stringify([...visited]))
   }, [visited])
 
+  useEffect(() => {
+    window.sessionStorage.setItem(PATH_KEY, path)
+  }, [path])
+
+  useEffect(() => {
+    window.localStorage.setItem(RAN_KEY, JSON.stringify([...ran]))
+  }, [ran])
+
   // Shareable deep links: #/skills, #/worktrees, …
   useEffect(() => {
     const base = window.location.pathname + window.location.search
     window.history.replaceState(null, '', activeId ? `${base}#/${activeId}` : base)
   }, [activeId])
 
-  const select = useCallback((id: string) => {
-    setActiveId(id)
-    setVisited((current) => {
-      if (current.has(id)) return current
+  const select = useCallback(
+    (id: string) => {
+      setActiveId(id)
+      // Selecting a stop outside the current path widens the view to All.
+      setPath((current) =>
+        pathStops(current).some((stop) => stop.id === id) ? current : 'all',
+      )
+      setVisited((current) => {
+        if (current.has(id)) return current
+        const next = new Set(current)
+        next.add(id)
+        return next
+      })
+    },
+    [],
+  )
+
+  const toggleRan = useCallback((id: string) => {
+    setRan((current) => {
       const next = new Set(current)
-      next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }, [])
@@ -95,20 +167,26 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
 
   const step = useCallback(
     (delta: number) => {
-      const current = activeId ? stops.findIndex((stop) => stop.id === activeId) : -1
+      const current = activeId ? walk.findIndex((stop) => stop.id === activeId) : -1
       const next =
         current === -1
           ? delta > 0
             ? 0
-            : stops.length - 1
-          : (current + delta + stops.length) % stops.length
-      select(stops[next].id)
+            : walk.length - 1
+          : (current + delta + walk.length) % walk.length
+      select(walk[next].id)
     },
-    [activeId, select],
+    [activeId, select, walk],
   )
 
-  const tourComplete = visited.size === stops.length
+  const pathVisited = walk.filter((stop) => visited.has(stop.id)).length
+  const tourComplete = pathVisited === walk.length
   const showCompletion = tourComplete && !activeId && !completionDismissed
+
+  const switchPath = useCallback((next: PathId) => {
+    setPath(next)
+    setCompletionDismissed(false)
+  }, [])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -127,6 +205,9 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
       }
 
       if (showHelp || showCompletion) return
+      // Don't hijack keys while the user types in a real control (list fallback).
+      const target = event.target as HTMLElement | null
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
 
       if (event.key === 'ArrowRight') {
         event.preventDefault()
@@ -140,20 +221,21 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
       }
       if (event.key === 'g' || event.key === 'G') {
         if (activeId) zoomOut()
-        else select(stops[0].id)
+        else select(walk[0].id)
         return
       }
 
-      const digit = Number.parseInt(event.key, 10)
-      if (!Number.isNaN(digit) && digit >= 1 && digit <= Math.min(9, stops.length)) {
+      // Jump keys cover every stop in the current path: 1–9, 0, then letters.
+      const jump = JUMP_KEYS.indexOf(event.key.toLowerCase())
+      if (jump >= 0 && jump < walk.length) {
         event.preventDefault()
-        select(stops[digit - 1].id)
+        select(walk[jump].id)
       }
     }
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [activeId, select, showCompletion, showHelp, step, zoomOut])
+  }, [activeId, select, showCompletion, showHelp, step, walk, zoomOut])
 
   // Measure the active stop's region in untransformed IDE coordinates.
   useLayoutEffect(() => {
@@ -219,14 +301,37 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
     [zoomOut],
   )
 
+  // Below ~900px the scaled 1440×900 IDE is unusable — swap to a stop list.
+  if (narrow) {
+    return (
+      <TourList
+        walk={walk}
+        path={path}
+        visited={visited}
+        ran={ran}
+        onSwitchPath={switchPath}
+        onVisit={(id) =>
+          setVisited((current) => {
+            if (current.has(id)) return current
+            const next = new Set(current)
+            next.add(id)
+            return next
+          })
+        }
+        onToggleRan={toggleRan}
+      />
+    )
+  }
+
   // ——— Camera ———
-  const overviewScale = Math.min(viewport.w / (IDE_W + 90), (viewport.h - 90) / IDE_H)
+  // Reserve headroom for the fixed path chips so they sit above the IDE chrome.
+  const overviewScale = Math.min(viewport.w / (IDE_W + 90), (viewport.h - 130) / IDE_H)
   const panelSide: 'left' | 'right' =
     activeStop && anchor ? (anchor.x + anchor.w / 2 >= IDE_W / 2 ? 'left' : 'right') : 'right'
 
   let scale = overviewScale
   let tx = (viewport.w - IDE_W * overviewScale) / 2
-  let ty = (viewport.h - 56 - IDE_H * overviewScale) / 2 + 8
+  let ty = (viewport.h - 56 - IDE_H * overviewScale) / 2 + 28
 
   if (activeStop && anchor) {
     const areaX = panelSide === 'left' ? PANEL_W + 44 : 28
@@ -293,6 +398,8 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
         <IdeLayout
           activeStop={activeStop}
           visited={visited}
+          pathIds={new Set(walk.map((stop) => stop.id))}
+          pathTotal={walk.length}
           nextId={nextStop?.id ?? null}
           scanning={!activeId && visited.size === 0}
           reduceMotion={reduceMotion}
@@ -307,15 +414,35 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             key={activeStop.id}
             stop={activeStop}
             index={index}
+            total={walk.length}
             side={panelSide}
             nextTitle={nextStop && nextStop.id !== activeStop.id ? nextStop.title : null}
             nextDotOnScreen={nextDotOnScreen}
+            ranIt={ran.has(activeStop.id)}
             reduceMotion={reduceMotion}
+            onToggleRan={() => toggleRan(activeStop.id)}
             onPrev={() => step(-1)}
             onClose={zoomOut}
           />
         )}
       </AnimatePresence>
+
+      {!activeStop && (
+        <div className="world-paths">
+          <PathChip current={path} id="crash" label="Crash course · 8" onPick={switchPath} />
+          {tracks.map((track) => (
+            <PathChip
+              key={track.id}
+              current={path}
+              id={track.id}
+              label={track.label}
+              onPick={switchPath}
+            />
+          ))}
+          <PathChip current={path} id="all" label={`Explore all · ${stops.length}`} onPick={switchPath} />
+          {path === 'crash' && <span className="world-paths__mission">{crashMission}</span>}
+        </div>
+      )}
 
       <div className="world-tourbar">
         {activeStop ? (
@@ -324,7 +451,10 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
               ←
             </button>
             <span className="world-tourbar__stop">
-              {index + 1}/{stops.length} · {activeStop.title}
+              {index + 1}/{walk.length} · {activeStop.title}
+              <em className="world-tourbar__act">
+                Act {activeStop.act} · {actTitle(activeStop.act)}
+              </em>
             </span>
             <button
               type="button"
@@ -339,26 +469,29 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             <button
               type="button"
               className="world-tourbar__start"
-              onClick={() => select(stops[0].id)}
+              onClick={() => select(walk[0].id)}
             >
               ▶ Guided tour
             </button>
             <span className="world-tourbar__hint">
-              G tour · ← → stops · Esc out · 1–9 jump · ? keys
+              G tour · ← → stops · Esc out · 1–0/a–m jump · ? keys
             </span>
           </>
         )}
       </div>
 
       <div className="world-stamp" aria-hidden="true">
-        CampusEvents demo · Docs refreshed Aug 2026 · cursor.com/docs
+        Lion Events demo · Columbia University in the City of New York · cursor.com/docs
       </div>
 
       {showHelp && <ShortcutOverlay onClose={() => setShowHelp(false)} />}
 
       {showCompletion && (
         <CompletionCard
+          path={path}
+          ranCount={ran.size}
           reduceMotion={reduceMotion}
+          onExploreAll={() => switchPath('all')}
           onReplay={() => {
             setVisited(new Set())
             setCompletionDismissed(false)
@@ -373,22 +506,51 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
 
 /* ------------------------------------------------------------------ */
 
+function PathChip({
+  current,
+  id,
+  label,
+  onPick,
+}: {
+  current: PathId
+  id: PathId
+  label: string
+  onPick: (id: PathId) => void
+}) {
+  return (
+    <button
+      type="button"
+      className={`world-paths__chip${current === id ? ' is-active' : ''}`}
+      aria-pressed={current === id}
+      onClick={() => onPick(id)}
+    >
+      {label}
+    </button>
+  )
+}
+
 function StopPanel({
   stop,
   index,
+  total,
   side,
   nextTitle,
   nextDotOnScreen,
+  ranIt,
   reduceMotion,
+  onToggleRan,
   onPrev,
   onClose,
 }: {
   stop: TourStop
   index: number
+  total: number
   side: 'left' | 'right'
   nextTitle: string | null
   nextDotOnScreen: boolean
+  ranIt: boolean
   reduceMotion: boolean
+  onToggleRan: () => void
   onPrev: () => void
   onClose: () => void
 }) {
@@ -406,7 +568,10 @@ function StopPanel({
     >
       <div className="stop-panel__meta">
         <span className="stop-panel__count">
-          {index + 1} / {stops.length}
+          {index + 1} / {total} · Act {stop.act}
+        </span>
+        <span className="stop-panel__sim-badge" title="This demo is a scripted simulation">
+          Simulated
         </span>
         {stop.gem && <span className="stop-panel__gem">Power-user gem</span>}
         <button type="button" className="stop-panel__close" onClick={onClose} aria-label="Back to overview">
@@ -431,10 +596,20 @@ function StopPanel({
       )}
 
       {stop.tryIt && (
-        <p className="stop-panel__try">
-          <strong>Try</strong> <code>{stop.tryIt}</code>
-        </p>
+        <TryLine text={stop.tryIt} ranIt={ranIt} onToggleRan={onToggleRan} />
       )}
+
+      <details className="stop-panel__live">
+        <summary>Run this live in Cursor</summary>
+        <ol>
+          <li>
+            Install <a href="https://cursor.com" target="_blank" rel="noreferrer">Cursor</a> and
+            grab the Lion Events starter (link on the completion card).
+          </li>
+          <li>Copy the Try prompt above and paste it into Agent chat.</li>
+          <li>Watch the same loop run for real — diffs, terminal, verification.</li>
+        </ol>
+      </details>
 
       <a className="stop-panel__cite" href={stop.cite.url} target="_blank" rel="noreferrer">
         {stop.cite.label} ↗
@@ -451,11 +626,57 @@ function StopPanel({
           </span>
         ) : (
           <span className="stop-panel__next-hint stop-panel__next-hint--done">
-            Tour complete — press <kbd>Esc</kbd> for the overview
+            Path complete — press <kbd>Esc</kbd> for the overview
           </span>
         )}
       </div>
     </motion.aside>
+  )
+}
+
+function TryLine({
+  text,
+  ranIt,
+  onToggleRan,
+}: {
+  text: string
+  ranIt: boolean
+  onToggleRan: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!copied) return
+    const timer = window.setTimeout(() => setCopied(false), 1600)
+    return () => window.clearTimeout(timer)
+  }, [copied])
+
+  return (
+    <div className="stop-panel__try">
+      <p>
+        <strong>Try</strong> <code>{text}</code>
+      </p>
+      <div className="stop-panel__try-actions">
+        <button
+          type="button"
+          className="stop-panel__copy"
+          onClick={() => {
+            void navigator.clipboard?.writeText(text)
+            setCopied(true)
+          }}
+        >
+          {copied ? 'Copied ✓' : 'Copy · paste into Cursor'}
+        </button>
+        <button
+          type="button"
+          className={`stop-panel__ran${ranIt ? ' is-done' : ''}`}
+          aria-pressed={ranIt}
+          onClick={onToggleRan}
+        >
+          {ranIt ? '✓ Ran it in Cursor' : 'I ran this in Cursor'}
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -465,7 +686,8 @@ function ShortcutOverlay({ onClose }: { onClose: () => void }) {
     ['← →', 'Previous / next stop'],
     ['Esc', 'Zoom out to the full IDE'],
     ['Scroll down', 'Zoom out'],
-    ['1–9', 'Jump to a stop'],
+    ['1–9, 0', 'Jump to stops 1–10 of the current path'],
+    ['A–F, H–M', 'Jump to stops 11–22 (G is the tour key)'],
     ['?', 'Toggle this overlay'],
   ]
 
@@ -481,6 +703,9 @@ function ShortcutOverlay({ onClose }: { onClose: () => void }) {
             </div>
           ))}
         </dl>
+        <p className="world-help__note">
+          Jump keys follow the selected path — crash course, a track, or all {stops.length} stops.
+        </p>
         <button type="button" onClick={onClose}>
           Close
         </button>

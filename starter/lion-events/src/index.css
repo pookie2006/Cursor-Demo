@@ -1,0 +1,83 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f7f7f5;
+  color: #1c1c1c;
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.app header h1 {
+  margin: 0 0 4px;
+}
+
+.app header p {
+  margin: 0 0 28px;
+  color: #6b6b6b;
+}
+
+.events {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.event-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e4e4e0;
+}
+
+.event-card h2 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.event-card p {
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  color: #555;
+}
+
+.rsvp-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rsvp-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d4d4d0;
+}
+
+.rsvp-form button {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #f54e00;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rsvp-done {
+  margin-top: 10px;
+  color: #17803d;
+  font-weight: 600;
+}
+
+.rsvp-error {
+  color: #c43c3c;
+  font-size: 0.8rem;
+}

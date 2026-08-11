@@ -1,0 +1,7 @@
+---
+globs: src/components/**
+---
+
+RSVP forms must use useRsvp().
+Campus building codes (MUDD, LER, NWC) — no free-text rooms.
+Tailwind is not set up; plain CSS in src/index.css.

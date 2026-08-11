@@ -51,14 +51,18 @@ export function LogoIntro({ onEnter, zooming, reduceMotion, onZoomComplete }: Lo
       />
 
       {!zooming && (
-        <motion.p
+        <motion.div
           className="logo-intro__hint"
           initial={reduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.6 }}
         >
-          Click to explore Cursor
-        </motion.p>
+          <p className="logo-intro__tagline">
+            The agent control plane — not autocomplete. Click to build Lion Events for Columbia
+            clubs.
+          </p>
+          <p className="logo-intro__identity">Columbia University in the City of New York</p>
+        </motion.div>
       )}
     </motion.button>
   )

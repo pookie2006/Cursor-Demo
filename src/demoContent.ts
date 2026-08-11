@@ -1,8 +1,8 @@
 /**
  * Content for the simulated Cursor session: one believable student project —
- * CampusEvents, an event planning site for a college CS club — carried through
+ * Lion Events, an event planning site for Columbia clubs — carried through
  * the chat transcript, the file-change list, the editor, and every advanced
- * feature vignette in the world map.
+ * feature vignette in the tour.
  */
 
 export type TokenKind = 'kw' | 'fn' | 'str' | 'type' | 'punc' | 'prop'
@@ -25,10 +25,10 @@ export interface ChangedFile {
   del: number
 }
 
-export const projectName = 'campus-events'
+export const projectName = 'lion-events'
 
 export const userPrompt =
-  'Build CampusEvents — an event planning site for our CS club. Event list, RSVP with email confirmation, and a month calendar view.'
+  'Build Lion Events for Columbia clubs: event list, NetID/email RSVP, and a month view of Lerner & Mudd rooms.'
 
 export const agentReply =
   'I’ll scaffold an events page, an RsvpForm component, and a POST /api/rsvp route that sends confirmation emails. Checking your routing setup first.'
@@ -41,7 +41,7 @@ export const changedFiles: ChangedFile[] = [
   { name: 'src/lib/email.ts', add: 22, del: 0 },
 ]
 
-export const followUpPrompt = 'Add a capacity limit — waitlist people after 40 RSVPs'
+export const followUpPrompt = 'Cap Mudd 233 at 40 — waitlist overflow for the ACM@CU kickoff'
 
 export const editorFile = 'RsvpForm.tsx'
 
@@ -126,7 +126,7 @@ export const codeLines: CodeLine[] = [
   { n: 10, tokens: [{ text: '}' }] },
 ]
 
-export const inlineEditPrompt = 'Validate the campus email domain with an inline error'
+export const inlineEditPrompt = 'Validate the Columbia email domain with an inline error'
 
 /** The line Inline Edit inserts once its prompt is submitted. */
 export const inlineEditResult: CodeToken[] = [
@@ -134,13 +134,13 @@ export const inlineEditResult: CodeToken[] = [
   { text: ' (!email.' },
   { text: 'endsWith', kind: 'fn' },
   { text: '(' },
-  { text: "'@college.edu'", kind: 'str' },
+  { text: "'@columbia.edu'", kind: 'str' },
   { text: ')) ' },
   { text: 'return', kind: 'kw' },
   { text: ' ' },
   { text: 'setError', kind: 'fn' },
   { text: '(' },
-  { text: "'Use your campus email'", kind: 'str' },
+  { text: "'Use your Columbia email'", kind: 'str' },
   { text: ')' },
 ]
 
@@ -154,8 +154,8 @@ export const contextMentions = [
 export const modeNames = ['Agent', 'Ask', 'Plan', 'Debug'] as const
 
 export const repos = [
-  { name: 'campus-events', active: true },
-  { name: 'cs-club-site', active: false },
+  { name: 'lion-events', active: true },
+  { name: 'acm-cu-site', active: false },
   { name: 'algo-study-notes', active: false },
 ]
 
@@ -164,14 +164,18 @@ export const automationRuns = [
   { name: 'Triage failing tests', when: 'On CI failure' },
 ]
 
-/** Fake browser preview shown when the Browser feature runs. */
+/**
+ * Fake browser preview shown when the Browser feature runs. Second story
+ * flavor: the room is full, so Agent verifies the RSVP → waitlist path
+ * instead of the happy path.
+ */
 export const preview = {
-  url: 'localhost:3000/events/demo-night',
-  heading: 'CS Club Demo Night',
-  sub: 'Thu 7:00 PM · Mudd 233 · 12 of 40 spots left',
-  emailPlaceholder: 'you@college.edu',
+  url: 'localhost:3000/events/devfest-kickoff',
+  heading: 'ACM@CU DevFest Kickoff',
+  sub: 'Fri 5:00 PM · Mudd 233 · 40 of 40 spots taken',
+  emailPlaceholder: 'uni@columbia.edu',
   button: 'RSVP',
-  toast: 'You’re in — see you Thursday!',
+  toast: 'Room full — you’re #3 on the waitlist',
 }
 
 export function lineText(tokens: CodeToken[]): string {
