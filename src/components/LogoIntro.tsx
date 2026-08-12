@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { CursorMark } from './CursorMark'
 
 type LogoIntroProps = {
   onEnter: () => void
@@ -18,31 +19,25 @@ export function LogoIntro({ onEnter, zooming, reduceMotion, onZoomComplete }: Lo
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
-      <div className="logo-intro__atmosphere" />
-
       <motion.div
         className="logo-intro__stage"
-        animate={{ scale: zooming ? 110 : 1 }}
-        transition={{ duration: 1.45, ease: [0.72, 0, 0.28, 1] }}
+        animate={{ scale: zooming ? 140 : 1 }}
+        transition={{ duration: 1.5, ease: [0.75, 0, 0.25, 1] }}
         onAnimationComplete={() => {
           if (zooming) onZoomComplete()
         }}
       >
         <div className="logo-intro__logo-wrap">
-          <img
-            className="logo-intro__logo"
-            src={`${import.meta.env.BASE_URL}cursor-mark.png`}
-            alt=""
-            draggable={false}
-          />
+          <CursorMark className="logo-intro__logo" />
         </div>
       </motion.div>
 
+      {/* Dive into the black cursor, then hold black while the demo mounts underneath. */}
       <motion.div
-        className="logo-intro__whiteout"
+        className="logo-intro__blackout"
         initial={{ opacity: 0 }}
         animate={{ opacity: zooming ? 1 : 0 }}
-        transition={{ duration: 0.45, delay: zooming ? 0.95 : 0, ease: 'easeInOut' }}
+        transition={{ duration: 0.4, delay: zooming ? 1.05 : 0, ease: 'easeInOut' }}
       />
 
       {!zooming && (

@@ -79,45 +79,36 @@ ul {
   place-items: center;
   width: 100%;
   height: 100%;
-  background: #f2f1ed;
+  background: #000;
   cursor: pointer;
   overflow: hidden;
-}
-
-.logo-intro__atmosphere {
-  position: absolute;
-  inset: -20%;
-  background: radial-gradient(ellipse 48% 42% at 50% 48%, rgba(0, 0, 0, 0.04), transparent 70%);
-  pointer-events: none;
 }
 
 .logo-intro__stage {
   position: relative;
   z-index: 1;
-  /* Dive into the cursor tip (top-right of the mark), not the circle center. */
-  transform-origin: 72% 36%;
+  /* Origin sits in the black cursor cutout so the dive goes into it. */
+  transform-origin: 56% 44%;
   will-change: transform;
 }
 
 .logo-intro__logo-wrap {
-  width: min(78vmin, 560px);
-  height: min(78vmin, 560px);
+  width: min(72vmin, 520px);
+  height: min(72vmin, 520px);
 }
 
 .logo-intro__logo {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: contain;
-  user-select: none;
-  -webkit-user-drag: none;
+  overflow: visible;
 }
 
-.logo-intro__whiteout {
+.logo-intro__blackout {
   position: absolute;
   inset: 0;
   z-index: 4;
-  background: #fff;
+  background: #000;
   pointer-events: none;
 }
 
@@ -131,7 +122,7 @@ ul {
   font-size: 0.95rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
 }
 

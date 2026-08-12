@@ -42,22 +42,25 @@ export default function App() {
     })
   }, [reduceMotion])
 
+  const showIde = stage === 'zooming' || stage === 'ide'
+
   return (
     <div className="app">
+      {/* Mount the demo under the intro during the dive so black reveals the IDE. */}
+      {showIde && (
+        <IdeWorld
+          initialStopId={initial.stopId}
+          reduceMotion={reduceMotion}
+          onRestart={() => setStage('intro')}
+        />
+      )}
+
       {(stage === 'intro' || stage === 'zooming') && (
         <LogoIntro
           onEnter={enter}
           zooming={stage === 'zooming'}
           reduceMotion={reduceMotion}
           onZoomComplete={() => setStage('ide')}
-        />
-      )}
-
-      {stage === 'ide' && (
-        <IdeWorld
-          initialStopId={initial.stopId}
-          reduceMotion={reduceMotion}
-          onRestart={() => setStage('intro')}
         />
       )}
     </div>
