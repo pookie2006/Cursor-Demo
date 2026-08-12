@@ -94,13 +94,14 @@ ul {
 .logo-intro__stage {
   position: relative;
   z-index: 1;
-  transform-origin: 50% 50%;
+  /* Dive into the cursor tip (top-right of the mark), not the circle center. */
+  transform-origin: 72% 36%;
   will-change: transform;
 }
 
 .logo-intro__logo-wrap {
-  width: min(72vw, 520px);
-  height: min(45vw, 325px);
+  width: min(78vmin, 560px);
+  height: min(78vmin, 560px);
 }
 
 .logo-intro__logo {

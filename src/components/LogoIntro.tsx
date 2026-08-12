@@ -22,8 +22,8 @@ export function LogoIntro({ onEnter, zooming, reduceMotion, onZoomComplete }: Lo
 
       <motion.div
         className="logo-intro__stage"
-        animate={{ scale: zooming ? 60 : 1 }}
-        transition={{ duration: 1.4, ease: [0.7, 0, 0.3, 1] }}
+        animate={{ scale: zooming ? 110 : 1 }}
+        transition={{ duration: 1.45, ease: [0.72, 0, 0.28, 1] }}
         onAnimationComplete={() => {
           if (zooming) onZoomComplete()
         }}
@@ -31,7 +31,7 @@ export function LogoIntro({ onEnter, zooming, reduceMotion, onZoomComplete }: Lo
         <div className="logo-intro__logo-wrap">
           <img
             className="logo-intro__logo"
-            src={`${import.meta.env.BASE_URL}cursor-logo.png`}
+            src={`${import.meta.env.BASE_URL}cursor-mark.png`}
             alt=""
             draggable={false}
           />
@@ -42,7 +42,7 @@ export function LogoIntro({ onEnter, zooming, reduceMotion, onZoomComplete }: Lo
         className="logo-intro__whiteout"
         initial={{ opacity: 0 }}
         animate={{ opacity: zooming ? 1 : 0 }}
-        transition={{ duration: 0.5, delay: zooming ? 0.85 : 0, ease: 'easeInOut' }}
+        transition={{ duration: 0.45, delay: zooming ? 0.95 : 0, ease: 'easeInOut' }}
       />
 
       {!zooming && (
