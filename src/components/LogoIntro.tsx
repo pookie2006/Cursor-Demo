@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { CursorLogo } from './CursorLogo'
 
 type LogoIntroProps = {
   onEnter: () => void
@@ -30,17 +29,13 @@ export function LogoIntro({ onEnter, zooming, reduceMotion, onZoomComplete }: Lo
         }}
       >
         <div className="logo-intro__logo-wrap">
-          <CursorLogo className="logo-intro__logo" />
+          <img
+            className="logo-intro__logo"
+            src={`${import.meta.env.BASE_URL}cursor-logo.png`}
+            alt=""
+            draggable={false}
+          />
         </div>
-      </motion.div>
-
-      <motion.div
-        className="logo-intro__brand"
-        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-        animate={{ opacity: zooming ? 0 : 1, y: zooming ? -8 : 0 }}
-        transition={{ delay: zooming ? 0 : 0.35, duration: 0.55 }}
-      >
-        <span className="logo-intro__wordmark">Cursor</span>
       </motion.div>
 
       <motion.div
@@ -51,18 +46,14 @@ export function LogoIntro({ onEnter, zooming, reduceMotion, onZoomComplete }: Lo
       />
 
       {!zooming && (
-        <motion.div
+        <motion.p
           className="logo-intro__hint"
           initial={reduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.6 }}
         >
-          <p className="logo-intro__tagline">
-            The agent control plane — not autocomplete. Click to build Lion Events for Columbia
-            clubs.
-          </p>
-          <p className="logo-intro__identity">Columbia University in the City of New York</p>
-        </motion.div>
+          Click here
+        </motion.p>
       )}
     </motion.button>
   )

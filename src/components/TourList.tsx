@@ -1,13 +1,6 @@
 import { useState } from 'react'
 
-import {
-  actTitle,
-  crashMission,
-  stops,
-  tracks,
-  type PathId,
-  type TourStop,
-} from '../tour'
+import { actTitle, stops, tracks, type PathId, type TourStop } from '../tour'
 
 interface TourListProps {
   walk: TourStop[]
@@ -65,7 +58,6 @@ export function TourList({
             </button>
           ))}
         </div>
-        {path === 'crash' && <p className="tour-list__mission">{crashMission}</p>}
         <p className="tour-list__progress">
           {pathVisited}/{walk.length} explored
         </p>

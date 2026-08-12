@@ -7,7 +7,6 @@ import { TourList } from './TourList'
 import {
   JUMP_KEYS,
   actTitle,
-  crashMission,
   isPathId,
   isStopId,
   pathStops,
@@ -440,7 +439,6 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             />
           ))}
           <PathChip current={path} id="all" label={`Explore all · ${stops.length}`} onPick={switchPath} />
-          {path === 'crash' && <span className="world-paths__mission">{crashMission}</span>}
         </div>
       )}
 
@@ -473,9 +471,7 @@ export function IdeWorld({ initialStopId, reduceMotion, onRestart }: IdeWorldPro
             >
               ▶ Guided tour
             </button>
-            <span className="world-tourbar__hint">
-              G tour · ← → stops · Esc out · 1–0/a–m jump · ? keys
-            </span>
+            <span className="world-tourbar__hint">Esc to exit tour</span>
           </>
         )}
       </div>

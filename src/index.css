@@ -79,7 +79,7 @@ ul {
   place-items: center;
   width: 100%;
   height: 100%;
-  background: #000;
+  background: #f2f1ed;
   cursor: pointer;
   overflow: hidden;
 }
@@ -87,45 +87,29 @@ ul {
 .logo-intro__atmosphere {
   position: absolute;
   inset: -20%;
-  background:
-    radial-gradient(ellipse 50% 40% at 50% 45%, rgba(245, 78, 0, 0.14), transparent 60%),
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(40, 40, 48, 0.5), transparent 50%);
+  background: radial-gradient(ellipse 48% 42% at 50% 48%, rgba(0, 0, 0, 0.04), transparent 70%);
   pointer-events: none;
 }
 
 .logo-intro__stage {
   position: relative;
   z-index: 1;
-  transform-origin: 55% 40%;
+  transform-origin: 50% 50%;
   will-change: transform;
 }
 
 .logo-intro__logo-wrap {
-  width: min(34vw, 220px);
-  height: min(34vw, 220px);
-  filter: drop-shadow(0 0 48px rgba(255, 255, 255, 0.18));
+  width: min(72vw, 520px);
+  height: min(45vw, 325px);
 }
 
 .logo-intro__logo {
   width: 100%;
   height: 100%;
   display: block;
-}
-
-.logo-intro__brand {
-  position: absolute;
-  top: calc(50% + min(18vw, 120px));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  pointer-events: none;
-}
-
-.logo-intro__wordmark {
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  color: #fff;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .logo-intro__whiteout {
@@ -146,7 +130,7 @@ ul {
   font-size: 0.95rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(0, 0, 0, 0.45);
   font-weight: 500;
 }
 
@@ -2409,26 +2393,6 @@ ul {
   background: var(--accent);
 }
 
-/* ——— Intro tagline & identity ——— */
-.logo-intro__hint p {
-  margin: 0;
-}
-
-.logo-intro__tagline {
-  max-width: 520px;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  line-height: 1.5;
-}
-
-.logo-intro__identity {
-  margin-top: 8px !important;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.38);
-}
-
 /* ——— Path chips (crash course / tracks / all) ——— */
 .world-paths {
   position: fixed;
@@ -2466,14 +2430,6 @@ ul {
 .world-paths__chip.is-active {
   background: var(--dot);
   color: #fff;
-}
-
-.world-paths__mission {
-  flex-basis: 100%;
-  text-align: center;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #ff9a66;
 }
 
 /* ——— Act label in the tour bar ——— */
@@ -2680,13 +2636,6 @@ ul {
 .tour-list__chips button.is-active {
   background: var(--dot);
   color: #fff;
-}
-
-.tour-list__mission {
-  margin: 0 0 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #ff9a66;
 }
 
 .tour-list__progress {

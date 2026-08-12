@@ -91,8 +91,6 @@ export const tracks: { id: TrackId; label: string }[] = [
   { id: 'ship', label: 'Ship & harden' },
 ]
 
-export const crashMission = 'Friday club fair in Lerner — ship waitlist before 5pm.'
-
 /** Clone command for the real starter students take home. */
 export const starterClone = 'npx degit pookie2006/Cursor-Demo/starter/lion-events lion-events'
 export const starterUrl =

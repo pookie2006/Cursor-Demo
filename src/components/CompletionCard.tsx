@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { challenges, crashMission, starterClone, starterUrl, stops, type PathId } from '../tour'
+import { challenges, starterClone, starterUrl, stops, type PathId } from '../tour'
 import { CursorLogo } from './CursorLogo'
 
 const UNLOCK_AT = 3
@@ -67,8 +67,8 @@ export function CompletionCard({
         <p className="completion__body">
           {crash ? (
             <>
-              Mission accomplished: {crashMission} You’ve seen the core loop — now make it yours.
-              Continue Lion Events, then open <em>your</em> Columbia repo and reuse the same loop.
+              Crash course complete — you’ve seen the core loop. Continue Lion Events, then open{' '}
+              <em>your</em> Columbia repo and reuse the same loop.
             </>
           ) : (
             <>
